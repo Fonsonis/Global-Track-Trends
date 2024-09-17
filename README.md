@@ -48,11 +48,3 @@ npm start
 ```
 
 This will start the development server and open the application in your default web browser at `http://localhost:3000`.
-
-## Contact
-
-If you want to contact me you can reach me at `<your_email@example.com>`.
-
-## License
-
-This project uses the following license: [MIT License](<link_to_license>).
