@@ -41,9 +41,10 @@ function Playlists({ token, onSongSelect, onPlaylistSelect }) {
     fetchPlaylists();
   }, [token]);
 
-  const togglePlaylist = async (playlistId) => {
+  const togglePlaylist = async (playlist) => {
+    const playlistId = playlist.id;
     setSelectedList(prevSelected => prevSelected === playlistId ? null : playlistId);
-    
+
     if (!playlistTracks[playlistId]) {
       try {
         const response = await axios.get(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
@@ -55,6 +56,8 @@ function Playlists({ token, onSongSelect, onPlaylistSelect }) {
         console.error('Error al obtener las pistas de la lista de reproducción', error);
       }
     }
+
+    onPlaylistSelect(playlist);
   };
 
   const toggleTrackExpansion = (playlistId) => {
@@ -66,10 +69,6 @@ function Playlists({ token, onSongSelect, onPlaylistSelect }) {
     onSongSelect(song);
   };
 
-  const handlePlaylistClick = (playlist) => {
-    onPlaylistSelect(playlist);
-  };
-
   return (
     <div style={PlaylistsStyles.container}>
       {playlists.map((playlist) => (
@@ -77,20 +76,26 @@ function Playlists({ token, onSongSelect, onPlaylistSelect }) {
           key={playlist.id} 
           style={{
             ...PlaylistsStyles.playlistCloud,
-            ...(selectedList === playlist.id ? PlaylistsStyles.expandedCloud : PlaylistsStyles.closedCloud)
+            backgroundImage: selectedList === playlist.id ? 'none' : `url(${playlist.images[0]?.url})`,
+            backgroundColor: selectedList === playlist.id ? 'turquoise' : 'transparent', // Fondo turquesa si está seleccionada
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
           }}
-          onClick={() => {
-            togglePlaylist(playlist.id);
-            handlePlaylistClick(playlist);
-          }}
+          onClick={() => togglePlaylist(playlist)}
         >
-          <h3 style={PlaylistsStyles.playlistTitle}>{playlist.name}</h3>
+          {selectedList === playlist.id && playlist.images && playlist.images.length > 0 && (
+            <img 
+              src={playlist.images[0].url} 
+              alt={playlist.name} 
+              style={PlaylistsStyles.playlistImageTopLeft} // Imagen arriba a la izquierda
+            />
+          )}
+          <div style={PlaylistsStyles.playlistContent}>
+            <h3 style={PlaylistsStyles.playlistTitle}>{playlist.name}</h3>
+            {playlist.description && <p style={PlaylistsStyles.playlistDescription}>{playlist.description}</p>}
+          </div>
           {selectedList === playlist.id && (
             <div style={PlaylistsStyles.expandedInfo}>
-              {playlist.images && playlist.images.length > 0 && (
-                <img src={playlist.images[0].url} alt={playlist.name} style={PlaylistsStyles.playlistImage} />
-              )}
-              <p style={PlaylistsStyles.playlistDescription}>{playlist.description}</p>
               {playlistTracks[playlist.id] && (
                 <div>
                   <h4 style={PlaylistsStyles.trackListTitle}>Canciones:</h4>

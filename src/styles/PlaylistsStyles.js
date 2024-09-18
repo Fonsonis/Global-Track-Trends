@@ -1,61 +1,71 @@
 export const PlaylistsStyles = {
-    container: {
-      overflowY: 'auto',
-      height: '100%',
-    },
-    playlistCloud: {
-      backgroundColor: 'white',
-      borderRadius: '15px',
-      padding: '15px',
-      marginBottom: '15px',
-      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-      cursor: 'pointer',
-    },
-    playlistTitle: {
-      fontSize: '18px',
-      marginBottom: '10px',
-    },
-    expandedInfo: {
-      marginTop: '10px',
-    },
-    playlistImage: {
-      width: '100px',
-      height: '100px',
-      objectFit: 'cover',
-      marginBottom: '10px',
-    },
-    playlistDescription: {
-      fontSize: '14px',
-      marginBottom: '10px',
-    },
-    trackListTitle: {
-      fontSize: '16px',
-      marginBottom: '5px',
-    },
-    trackList: {
-      listStyleType: 'none',
-      padding: 0,
-    },
-    trackItem: {
-      padding: '5px 0',
-      fontSize: '14px',
-    },
-    expandButton: {
-      marginTop: '10px',
-      padding: '5px 10px',
-      backgroundColor: '#1DB954',
-      color: 'white',
-      border: 'none',
-      borderRadius: '5px',
-      cursor: 'pointer',
-    },
-    closedCloud: {
-      height: '60px',
-      overflow: 'hidden',
-      transition: 'height 0.3s ease-in-out',
-    },
-    expandedCloud: {
-      height: 'auto',
-      transition: 'height 0.3s ease-in-out',
-    },
-  };
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px',
+  },
+  playlistCloud: {
+    position: 'relative',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '20px',
+    borderRadius: '10px',
+    color: 'white',
+    fontSize: '1.2em',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)', // Fondo por defecto (oscuro)
+    cursor: 'pointer',
+    transition: 'transform 0.3s, background-color 0.3s', // Transición suave del color
+  },
+  expandedCloud: {
+    transform: 'scale(1.05)',
+  },
+  closedCloud: {
+    transform: 'scale(1)',
+  },
+  playlistTitle: {
+    fontSize: '1.5em',
+    fontWeight: 'bold',
+  },
+  playlistDescription: {
+    fontSize: '1em',
+    opacity: 0.8,
+  },
+  playlistImageTopLeft: {
+    position: 'absolute',
+    top: '10px', // Arriba
+    left: '10px', // Izquierda
+    width: '80px', // Tamaño de la imagen
+    height: '80px',
+    objectFit: 'cover',
+    borderRadius: '5px',
+    boxShadow: '0 4px 8px rgba(0,0,0,0.2)', // Sombra para resaltar la imagen
+  },
+  playlistContent: {
+    marginLeft: '100px', // Mover el contenido a la derecha para dejar espacio a la imagen
+  },
+  expandedInfo: {
+    marginTop: '10px',
+  },
+  trackListTitle: {
+    fontSize: '1.2em',
+    fontWeight: 'bold',
+    marginBottom: '10px',
+  },
+  trackList: {
+    listStyleType: 'none',
+    paddingLeft: '0',
+  },
+  trackItem: {
+    margin: '5px 0',
+  },
+  expandButton: {
+    marginTop: '10px',
+    background: 'white',
+    color: 'black',
+    border: 'none',
+    borderRadius: '5px',
+    padding: '5px 10px',
+    cursor: 'pointer',
+  },
+};

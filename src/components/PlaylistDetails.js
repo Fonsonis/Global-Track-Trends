@@ -10,6 +10,8 @@ function PlaylistDetails({ playlist }) {
       )}
       <p style={PlaylistDetailsStyles.description}>{playlist.description}</p>
       <p style={PlaylistDetailsStyles.info}>Creador: {playlist.owner.display_name}</p>
+      <p style={PlaylistDetailsStyles.info}>Link: </p>
+      <a href={playlist.external_urls.spotify}> {playlist.external_urls.spotify}</a>
     </div>
   );
 }
