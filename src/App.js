@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import Login from './components/Login';
-import Profile from './components/Profile';
-import { getTokenFromUrl } from './components/spotify';
+import MainScreen from './components/MainScreen';
+import { getTokenFromUrl } from './utils/spotify';
 import { AppStyles } from './styles/AppStyles';
 
 function App() {
@@ -12,28 +13,34 @@ function App() {
     const tokenFromUrl = getTokenFromUrl();
     if (tokenFromUrl) {
       setToken(tokenFromUrl);
-      window.location.hash = ''; // Limpia la URL
+      window.location.hash = '';
+      fetchUserProfile(tokenFromUrl);
     }
   }, []);
+
+  const fetchUserProfile = async (token) => {
+    try {
+      const response = await axios.get('https://api.spotify.com/v1/me', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setUserProfile(response.data);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
 
   const logout = () => {
     setToken('');
     setUserProfile(null);
-    
-    // Limpia el almacenamiento local
     window.localStorage.removeItem('token');
     for (let key in window.localStorage) {
       if (key.startsWith('spotify')) {
         window.localStorage.removeItem(key);
       }
     }
-
-    // Limpia las cookies
     document.cookie.split(";").forEach(function(c) {
       document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
     });
-
-    // Redirige a la página de inicio de la aplicación
     window.location.href = window.location.origin;
   };
 
@@ -42,7 +49,7 @@ function App() {
       {!token ? (
         <Login />
       ) : (
-        <Profile token={token} setUserProfile={setUserProfile} userProfile={userProfile} logout={logout} />
+        <MainScreen token={token} userProfile={userProfile} logout={logout} />
       )}
     </div>
   );
