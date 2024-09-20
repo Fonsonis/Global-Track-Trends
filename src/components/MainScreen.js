@@ -22,7 +22,7 @@ export default function MainScreen({ token, userProfile, logout }) {
       setBackgroundColor(selectedPlaylist.color);
     } else {
       setPrevBackgroundColor(backgroundColor);
-      setBackgroundColor('#121212');
+      //setBackgroundColor('#121212');
     }
   }, [selectedPlaylist]);
 

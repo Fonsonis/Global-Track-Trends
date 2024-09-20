@@ -15,16 +15,16 @@ export default function Component({ token, onSongSelect, onPlaylistSelect, selec
   useEffect(() => {
     const fetchPlaylists = async () => {
       try {
-        const response = await axios.get('https://api.spotify.com/v1/search', {
-          headers: { Authorization: `Bearer ${token}` },
-          params: {
-            q: 'Top 50',
-            type: 'playlist',
-            limit: 50
-          }
+        let response = await fetch(`https://api.spotify.com/v1/search?q=Top 50&type=playlist&limit=50`, {
+          headers: { "Authorization": `Bearer ${token}` },
         });
+        if(!response.ok){
+          alert("Error con la API de Spotify")
+          return;
+        }
+        response = await response.json();
 
-        const allPlaylists = response.data.playlists.items;
+        const allPlaylists = response.playlists.items;
         const filteredPlaylists = allPlaylists.filter(playlist => 
           playlist.name.includes('Top 50 -') && playlist.owner.id === 'spotify'
         );

@@ -12,11 +12,14 @@ export default function App() {
   const [userProfile, setUserProfile] = useState(null);
 
   useEffect(() => {
-    const tokenFromUrl = getTokenFromUrl();
-    if (tokenFromUrl) {
-      setToken(tokenFromUrl);
+    const tokenFromLocal = localStorage.getItem('token');
+    const token = tokenFromLocal ?? getTokenFromUrl();
+    if (token) {
+      if(!tokenFromLocal)
+      localStorage.setItem('token',token);
+      setToken(token);
       window.location.hash = '';
-      fetchUserProfile(tokenFromUrl);
+      fetchUserProfile(token);
     }
   }, []);
 
@@ -32,7 +35,7 @@ export default function App() {
   };
 
   const logout = () => {
-    setToken('');
+    localStorage.removeItem('token');
     setUserProfile(null);
     window.localStorage.removeItem('token');
     localStorage.clear();
