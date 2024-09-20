@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Profile from './Profile';
 import Playlists from './Playlists';
 import SongDetails from './SongDetails';
 import PlaylistDetails from './PlaylistDetails';
 import NavigationBar from './NavigationBar';
+import SpotifyPlayer from './SpotifyPlayer';
 import { MainScreenStyles } from '../styles/MainScreenStyles';
 
 export default function MainScreen({ token, userProfile, logout }) {
@@ -11,6 +12,9 @@ export default function MainScreen({ token, userProfile, logout }) {
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
   const [backgroundColor, setBackgroundColor] = useState('#121212');
   const [prevBackgroundColor, setPrevBackgroundColor] = useState('#121212');
+  const [player, setPlayer] = useState(null);
+  const [currentPlaylist, setCurrentPlaylist] = useState([]);
+  const [currentSongIndex, setCurrentSongIndex] = useState(0);
 
   useEffect(() => {
     if (selectedPlaylist && selectedPlaylist.color) {
@@ -22,13 +26,35 @@ export default function MainScreen({ token, userProfile, logout }) {
     }
   }, [selectedPlaylist]);
 
-  const handleSongSelect = (song, playlistId) => {
+  const handleSongSelect = (song, playlistId, songList) => {
     setSelectedSong(song);
+    setCurrentPlaylist(songList);
+    setCurrentSongIndex(songList.findIndex(item => item.track.id === song.id));
   };
 
   const handlePlaylistSelect = (playlist) => {
     setSelectedPlaylist(playlist);
     setSelectedSong(null);
+    setCurrentPlaylist([]);
+    setCurrentSongIndex(0);
+  };
+
+  const handlePlayerReady = useCallback((player) => {
+    setPlayer(player);
+  }, []);
+
+  const handleSongChange = (direction) => {
+    if (currentPlaylist.length === 0) return;
+
+    let newIndex;
+    if (direction === 'next') {
+      newIndex = (currentSongIndex + 1) % currentPlaylist.length;
+    } else {
+      newIndex = (currentSongIndex - 1 + currentPlaylist.length) % currentPlaylist.length;
+    }
+
+    setCurrentSongIndex(newIndex);
+    setSelectedSong(currentPlaylist[newIndex].track);
   };
 
   return (
@@ -50,7 +76,13 @@ export default function MainScreen({ token, userProfile, logout }) {
       <div style={MainScreenStyles.detailsColumn}>
         <Profile userProfile={userProfile} logout={logout} />
         {selectedSong ? (
-          <SongDetails song={selectedSong} token={token} />
+          <SongDetails 
+            song={selectedSong} 
+            token={token} 
+            player={player} 
+            currentPlaylist={currentPlaylist}
+            onSongChange={handleSongChange}
+          />
         ) : selectedPlaylist ? (
           <PlaylistDetails playlist={selectedPlaylist} />
         ) : null}
@@ -64,6 +96,7 @@ export default function MainScreen({ token, userProfile, logout }) {
         />
       </div>
       <NavigationBar />
+      <SpotifyPlayer token={token} onPlayerReady={handlePlayerReady} />
     </div>
   );
 }

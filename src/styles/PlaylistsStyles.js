@@ -12,10 +12,6 @@ export const PlaylistsStyles = {
     cursor: 'pointer',
     transition: 'all 0.3s ease',
     border: '1px solid rgba(255, 255, 255, 0.3)',
-    '&:hover': {
-      transform: 'scale(1.05)',
-      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-    },
   },
   selectedPlaylist: {
     transform: 'scale(1.05)',
@@ -50,12 +46,10 @@ export const PlaylistsStyles = {
   playlistTitle: {
     fontSize: '16px',
     fontWeight: 'bold',
-    color: 'white',
   },
   playlistTitleExpanded: {
     fontSize: '24px',
     fontWeight: 'bold',
-    color: 'white',
   },
   trackListContainer: {
     marginTop: '16px',
@@ -64,7 +58,6 @@ export const PlaylistsStyles = {
     fontSize: '18px',
     fontWeight: 'bold',
     marginBottom: '12px',
-    color: 'white',
   },
   trackList: {
     listStyleType: 'none',
@@ -94,15 +87,12 @@ export const PlaylistsStyles = {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    fontWeight: 'bold',
-    color: 'white',
   },
   artistName: {
     marginLeft: '8px',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    color: 'white',
   },
   expandButton: {
     marginTop: '16px',

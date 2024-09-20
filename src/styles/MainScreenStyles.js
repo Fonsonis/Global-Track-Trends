@@ -17,7 +17,7 @@ export const MainScreenStyles = {
     transition: 'opacity 0.5s ease-in-out',
   },
   detailsColumn: {
-    width: '300px',
+    width: '400px', // Aumentamos el ancho de 300px a 350px
     padding: '20px',
     display: 'flex',
     flexDirection: 'column',

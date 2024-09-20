@@ -4,12 +4,13 @@ import { PlaylistsStyles } from '../styles/PlaylistsStyles';
 import { getAverageColor } from '../utils/colorUtils';
 import { Trophy } from 'lucide-react';
 
-export default function Playlists({ token, onSongSelect, onPlaylistSelect, selectedPlaylistId }) {
+export default function Component({ token, onSongSelect, onPlaylistSelect, selectedPlaylistId }) {
   const [playlists, setPlaylists] = useState([]);
   const [playlistTracks, setPlaylistTracks] = useState({});
   const [lastWeekTracks, setLastWeekTracks] = useState({});
   const [expandedTracks, setExpandedTracks] = useState({});
   const [playlistColors, setPlaylistColors] = useState({});
+  const [hoveredPlaylistId, setHoveredPlaylistId] = useState(null);
 
   useEffect(() => {
     const fetchPlaylists = async () => {
@@ -88,8 +89,8 @@ export default function Playlists({ token, onSongSelect, onPlaylistSelect, selec
 
   const handleSongClick = useCallback((song, playlistId, e) => {
     e.stopPropagation();
-    onSongSelect(song, playlistId);
-  }, [onSongSelect]);
+    onSongSelect(song, playlistId, playlistTracks[playlistId]);
+  }, [onSongSelect, playlistTracks]);
 
   const getPositionChange = (track, index, playlistId) => {
     const lastWeekIndex = lastWeekTracks[playlistId]?.findIndex(t => t.track.id === track.id);
@@ -103,7 +104,7 @@ export default function Playlists({ token, onSongSelect, onPlaylistSelect, selec
     switch(position) {
       case 0: return 'gold';
       case 1: return 'silver';
-      case 2: return '#CD7F32'; // Color bronce
+      case 2: return '#CD7F32';
       default: return null;
     }
   };
@@ -116,13 +117,15 @@ export default function Playlists({ token, onSongSelect, onPlaylistSelect, selec
           style={{
             ...PlaylistsStyles.playlistCloud,
             ...(selectedPlaylistId === playlist.id ? PlaylistsStyles.selectedPlaylist : {}),
-            backgroundColor: selectedPlaylistId === playlist.id 
-              ? `${playlistColors[playlist.id]}CC`
-              : selectedPlaylistId 
-                ? 'transparent' 
-                : playlistColors[playlist.id] || 'rgba(255, 255, 255, 0.1)',
+            backgroundColor: playlistColors[playlist.id] || 'rgba(255, 255, 255, 0.1)',
+            opacity: selectedPlaylistId && selectedPlaylistId !== playlist.id ? 0.7 : 1,
+            transition: 'all 0.3s ease',
+            transform: hoveredPlaylistId === playlist.id && selectedPlaylistId !== playlist.id ? 'scale(1.02)' : 'scale(1)',
+            boxShadow: hoveredPlaylistId === playlist.id && selectedPlaylistId !== playlist.id ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
           }}
           onClick={() => togglePlaylist(playlist)}
+          onMouseEnter={() => setHoveredPlaylistId(playlist.id)}
+          onMouseLeave={() => setHoveredPlaylistId(null)}
         >
           {selectedPlaylistId === playlist.id ? (
             <div style={PlaylistsStyles.expandedPlaylist}>
