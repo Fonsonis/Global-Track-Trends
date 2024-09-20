@@ -1,17 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Profile from './Profile';
 import Playlists from './Playlists';
 import SongDetails from './SongDetails';
 import PlaylistDetails from './PlaylistDetails';
+import NavigationBar from './NavigationBar';
 import { MainScreenStyles } from '../styles/MainScreenStyles';
 
-function MainScreen({ token, userProfile, logout }) {
+export default function MainScreen({ token, userProfile, logout }) {
   const [selectedSong, setSelectedSong] = useState(null);
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
+  const [backgroundColor, setBackgroundColor] = useState('#121212');
+  const [prevBackgroundColor, setPrevBackgroundColor] = useState('#121212');
 
-  const handleSongSelect = (song) => {
+  useEffect(() => {
+    if (selectedPlaylist && selectedPlaylist.color) {
+      setPrevBackgroundColor(backgroundColor);
+      setBackgroundColor(selectedPlaylist.color);
+    } else {
+      setPrevBackgroundColor(backgroundColor);
+      setBackgroundColor('#121212');
+    }
+  }, [selectedPlaylist]);
+
+  const handleSongSelect = (song, playlistId) => {
     setSelectedSong(song);
-    setSelectedPlaylist(null);
   };
 
   const handlePlaylistSelect = (playlist) => {
@@ -21,29 +33,37 @@ function MainScreen({ token, userProfile, logout }) {
 
   return (
     <div style={MainScreenStyles.container}>
-      <div style={MainScreenStyles.profileSection}>
+      <div 
+        style={{
+          ...MainScreenStyles.backgroundTransition,
+          backgroundColor: prevBackgroundColor,
+          opacity: 0,
+        }}
+      />
+      <div 
+        style={{
+          ...MainScreenStyles.backgroundTransition,
+          backgroundColor: backgroundColor,
+          opacity: 1,
+        }}
+      />
+      <div style={MainScreenStyles.detailsColumn}>
         <Profile userProfile={userProfile} logout={logout} />
-      </div>
-      <div style={MainScreenStyles.playlistsSection}>
-        <Playlists token={token} onSongSelect={handleSongSelect} onPlaylistSelect={handlePlaylistSelect} />
-      </div>
-      {selectedSong && (
-        <div style={MainScreenStyles.detailsSection}>
+        {selectedSong ? (
           <SongDetails song={selectedSong} token={token} />
-        </div>
-      )}
-      {selectedPlaylist && (
-        <div style={MainScreenStyles.detailsSection}>
+        ) : selectedPlaylist ? (
           <PlaylistDetails playlist={selectedPlaylist} />
-        </div>
-      )}
-      {!selectedSong && !selectedPlaylist && (
-        <div style={MainScreenStyles.emptyDetailsSection}>
-          Selecciona una canción o playlist para ver los detalles
-        </div>
-      )}
+        ) : null}
+      </div>
+      <div style={MainScreenStyles.contentColumn}>
+        <Playlists 
+          token={token} 
+          onSongSelect={handleSongSelect} 
+          onPlaylistSelect={handlePlaylistSelect}
+          selectedPlaylistId={selectedPlaylist?.id}
+        />
+      </div>
+      <NavigationBar />
     </div>
   );
 }
-
-export default MainScreen;

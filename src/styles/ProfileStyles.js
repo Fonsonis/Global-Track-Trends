@@ -1,21 +1,27 @@
 export const ProfileStyles = {
   container: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
     padding: '20px',
+    borderRadius: '8px',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    marginBottom: '20px',
   },
-  title: {
-    fontSize: '24px',
-    marginBottom: '15px',
+  loading: {
+    color: 'white',
+    textAlign: 'center',
   },
   image: {
-    width: '150px',
-    height: '150px',
+    width: '100px',
+    height: '100px',
     borderRadius: '50%',
     objectFit: 'cover',
     marginBottom: '15px',
   },
   imagePlaceholder: {
-    width: '150px',
-    height: '150px',
+    width: '100px',
+    height: '100px',
     borderRadius: '50%',
     backgroundColor: '#ddd',
     display: 'flex',
@@ -23,18 +29,28 @@ export const ProfileStyles = {
     alignItems: 'center',
     marginBottom: '15px',
   },
-  info: {
-    fontSize: '16px',
+  name: {
+    fontSize: '18px',
+    fontWeight: 'bold',
+    color: 'white',
     marginBottom: '10px',
   },
+  info: {
+    fontSize: '14px',
+    color: '#b3b3b3',
+    marginBottom: '15px',
+  },
   logoutButton: {
-    padding: '10px 15px',
+    padding: '8px 16px',
     backgroundColor: '#1DB954',
     color: 'white',
     border: 'none',
-    borderRadius: '5px',
+    borderRadius: '20px',
     cursor: 'pointer',
-    fontSize: '16px',
-    marginTop: '15px',
+    fontSize: '14px',
+    transition: 'background-color 0.3s ease',
+    '&:hover': {
+      backgroundColor: '#1ED760',
+    },
   },
 };

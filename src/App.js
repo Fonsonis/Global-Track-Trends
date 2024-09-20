@@ -4,8 +4,9 @@ import Login from './components/Login';
 import MainScreen from './components/MainScreen';
 import { getTokenFromUrl } from './utils/spotify';
 import { AppStyles } from './styles/AppStyles';
+import { GlobalStyles } from './styles/GlobalStyles';
 
-function App() {
+export default function App() {
   const [token, setToken] = useState('');
   const [userProfile, setUserProfile] = useState(null);
 
@@ -33,26 +34,19 @@ function App() {
     setToken('');
     setUserProfile(null);
     window.localStorage.removeItem('token');
-    for (let key in window.localStorage) {
-      if (key.startsWith('spotify')) {
-        window.localStorage.removeItem(key);
-      }
-    }
-    document.cookie.split(";").forEach(function(c) {
+    localStorage.clear();
+    document.cookie.split(";").forEach((c) => {
       document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
     });
     window.location.href = window.location.origin;
   };
 
   return (
-    <div className="App" style={AppStyles.app}>
-      {!token ? (
-        <Login />
-      ) : (
-        <MainScreen token={token} userProfile={userProfile} logout={logout} />
-      )}
-    </div>
+    <>
+      <style>{GlobalStyles}</style>
+      <div className="App" style={AppStyles.app}>
+        {!token ? <Login /> : <MainScreen token={token} userProfile={userProfile} logout={logout} />}
+      </div>
+    </>
   );
 }
-
-export default App;

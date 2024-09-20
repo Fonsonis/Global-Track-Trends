@@ -1,7 +1,7 @@
 import React from 'react';
 import { ProjectExplanationStyles } from '../styles/ProjectExplanationStyles';
 
-function ProjectExplanation() {
+export default function ProjectExplanation() {
   return (
     <div>
       <h2 style={ProjectExplanationStyles.title}>Sobre GlobalTrackTrends</h2>
@@ -9,5 +9,3 @@ function ProjectExplanation() {
     </div>
   );
 }
-
-export default ProjectExplanation;

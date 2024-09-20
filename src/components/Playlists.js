@@ -1,12 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { PlaylistsStyles } from '../styles/PlaylistsStyles';
+import { getAverageColor } from '../utils/colorUtils';
+import { Trophy } from 'lucide-react';
 
-function Playlists({ token, onSongSelect, onPlaylistSelect }) {
+export default function Playlists({ token, onSongSelect, onPlaylistSelect, selectedPlaylistId }) {
   const [playlists, setPlaylists] = useState([]);
   const [playlistTracks, setPlaylistTracks] = useState({});
-  const [selectedList, setSelectedList] = useState(null);
+  const [lastWeekTracks, setLastWeekTracks] = useState({});
   const [expandedTracks, setExpandedTracks] = useState({});
+  const [playlistColors, setPlaylistColors] = useState({});
 
   useEffect(() => {
     const fetchPlaylists = async () => {
@@ -21,18 +24,25 @@ function Playlists({ token, onSongSelect, onPlaylistSelect }) {
         });
 
         const allPlaylists = response.data.playlists.items;
-        const topGlobalPlaylist = allPlaylists.find(playlist => 
-          playlist.name.includes('Top 50 - Global') && playlist.owner.id === 'spotify'
-        );
-        const topSpainPlaylist = allPlaylists.find(playlist => 
-          playlist.name.includes('Top 50 - Spain') && playlist.owner.id === 'spotify'
+        const filteredPlaylists = allPlaylists.filter(playlist => 
+          playlist.name.includes('Top 50 -') && playlist.owner.id === 'spotify'
         );
 
-        if (topGlobalPlaylist && topSpainPlaylist) {
-          setPlaylists([topGlobalPlaylist, topSpainPlaylist]);
-        } else {
-          console.error('No se encontraron las listas de reproducción esperadas');
-        }
+        const sortedPlaylists = filteredPlaylists.sort((a, b) => {
+          if (a.name.includes('Global')) return -1;
+          if (b.name.includes('Global')) return 1;
+          return a.name.localeCompare(b.name);
+        });
+
+        setPlaylists(sortedPlaylists);
+        
+        sortedPlaylists.forEach(playlist => {
+          if (playlist.images[0]) {
+            getAverageColor(playlist.images[0].url).then(color => {
+              setPlaylistColors(prev => ({ ...prev, [playlist.id]: color }));
+            });
+          }
+        });
       } catch (error) {
         console.error('Error al obtener las listas de reproducción', error);
       }
@@ -43,30 +53,59 @@ function Playlists({ token, onSongSelect, onPlaylistSelect }) {
 
   const togglePlaylist = async (playlist) => {
     const playlistId = playlist.id;
-    setSelectedList(prevSelected => prevSelected === playlistId ? null : playlistId);
+
+    if (selectedPlaylistId === playlistId) {
+      onPlaylistSelect(null);
+      return;
+    }
 
     if (!playlistTracks[playlistId]) {
       try {
-        const response = await axios.get(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+        const currentResponse = await axios.get(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
           headers: { Authorization: `Bearer ${token}` },
           params: { limit: 50 }
         });
-        setPlaylistTracks(prev => ({ ...prev, [playlistId]: response.data.items }));
+        setPlaylistTracks(prev => ({ ...prev, [playlistId]: currentResponse.data.items }));
+
+        const lastWeekResponse = await axios.get(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { limit: 50 }
+        });
+        const shuffledTracks = [...lastWeekResponse.data.items].sort(() => Math.random() - 0.5);
+        setLastWeekTracks(prev => ({ ...prev, [playlistId]: shuffledTracks }));
       } catch (error) {
         console.error('Error al obtener las pistas de la lista de reproducción', error);
       }
     }
 
-    onPlaylistSelect(playlist);
+    onPlaylistSelect({...playlist, color: playlistColors[playlistId]});
   };
 
-  const toggleTrackExpansion = (playlistId) => {
+  const toggleTrackExpansion = (playlistId, e) => {
+    e.stopPropagation();
     setExpandedTracks(prev => ({ ...prev, [playlistId]: !prev[playlistId] }));
   };
 
-  const handleSongClick = (song, e) => {
+  const handleSongClick = useCallback((song, playlistId, e) => {
     e.stopPropagation();
-    onSongSelect(song);
+    onSongSelect(song, playlistId);
+  }, [onSongSelect]);
+
+  const getPositionChange = (track, index, playlistId) => {
+    const lastWeekIndex = lastWeekTracks[playlistId]?.findIndex(t => t.track.id === track.id);
+    if (lastWeekIndex === undefined) return 'gray';
+    if (index < lastWeekIndex) return 'green';
+    if (index > lastWeekIndex) return 'red';
+    return 'gray';
+  };
+
+  const getMedalColor = (position) => {
+    switch(position) {
+      case 0: return 'gold';
+      case 1: return 'silver';
+      case 2: return '#CD7F32'; // Color bronce
+      default: return null;
+    }
   };
 
   return (
@@ -76,46 +115,62 @@ function Playlists({ token, onSongSelect, onPlaylistSelect }) {
           key={playlist.id} 
           style={{
             ...PlaylistsStyles.playlistCloud,
-            backgroundImage: selectedList === playlist.id ? 'none' : `url(${playlist.images[0]?.url})`,
-            backgroundColor: selectedList === playlist.id ? 'turquoise' : 'transparent', // Fondo turquesa si está seleccionada
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
+            ...(selectedPlaylistId === playlist.id ? PlaylistsStyles.selectedPlaylist : {}),
+            backgroundColor: selectedPlaylistId === playlist.id 
+              ? `${playlistColors[playlist.id]}CC`
+              : selectedPlaylistId 
+                ? 'transparent' 
+                : playlistColors[playlist.id] || 'rgba(255, 255, 255, 0.1)',
           }}
           onClick={() => togglePlaylist(playlist)}
         >
-          {selectedList === playlist.id && playlist.images && playlist.images.length > 0 && (
-            <img 
-              src={playlist.images[0].url} 
-              alt={playlist.name} 
-              style={PlaylistsStyles.playlistImageTopLeft} // Imagen arriba a la izquierda
-            />
-          )}
-          <div style={PlaylistsStyles.playlistContent}>
-            <h3 style={PlaylistsStyles.playlistTitle}>{playlist.name}</h3>
-            {playlist.description && <p style={PlaylistsStyles.playlistDescription}>{playlist.description}</p>}
-          </div>
-          {selectedList === playlist.id && (
-            <div style={PlaylistsStyles.expandedInfo}>
+          {selectedPlaylistId === playlist.id ? (
+            <div style={PlaylistsStyles.expandedPlaylist}>
+              <div style={PlaylistsStyles.expandedHeader}>
+                <img 
+                  src={playlist.images[0].url} 
+                  alt={playlist.name} 
+                  style={PlaylistsStyles.playlistImageSmall}
+                />
+                <h3 style={PlaylistsStyles.playlistTitleExpanded}>{playlist.name}</h3>
+              </div>
               {playlistTracks[playlist.id] && (
-                <div>
+                <div style={PlaylistsStyles.trackListContainer}>
                   <h4 style={PlaylistsStyles.trackListTitle}>Canciones:</h4>
                   <ul style={PlaylistsStyles.trackList}>
                     {playlistTracks[playlist.id].slice(0, expandedTracks[playlist.id] ? 50 : 10).map((item, index) => (
                       <li 
                         key={item.track.id} 
                         style={{...PlaylistsStyles.trackItem, cursor: 'pointer'}}
-                        onClick={(e) => handleSongClick(item.track, e)}
+                        onClick={(e) => handleSongClick(item.track, playlist.id, e)}
                       >
-                        {index + 1}. {item.track.name} - {item.track.artists.map(artist => artist.name).join(', ')}
+                        <div style={{
+                          ...PlaylistsStyles.positionIndicator,
+                          backgroundColor: getPositionChange(item.track, index, playlist.id)
+                        }}>
+                          {index + 1}
+                        </div>
+                        {getMedalColor(index) && (
+                          <Trophy 
+                            size={16} 
+                            style={{
+                              ...PlaylistsStyles.medalIcon,
+                              color: getMedalColor(index)
+                            }} 
+                          />
+                        )}
+                        <span style={PlaylistsStyles.trackName}>
+                          {item.track.name}
+                        </span>
+                        <span style={PlaylistsStyles.artistName}>
+                          {item.track.artists.map(artist => artist.name).join(', ')}
+                        </span>
                       </li>
                     ))}
                   </ul>
                   {playlistTracks[playlist.id].length > 10 && (
                     <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleTrackExpansion(playlist.id);
-                      }} 
+                      onClick={(e) => toggleTrackExpansion(playlist.id, e)} 
                       style={PlaylistsStyles.expandButton}
                     >
                       {expandedTracks[playlist.id] ? 'Mostrar menos' : 'Mostrar más'}
@@ -124,11 +179,18 @@ function Playlists({ token, onSongSelect, onPlaylistSelect }) {
                 </div>
               )}
             </div>
+          ) : (
+            <div style={PlaylistsStyles.collapsedPlaylist}>
+              <img 
+                src={playlist.images[0].url} 
+                alt={playlist.name} 
+                style={PlaylistsStyles.playlistImage}
+              />
+              <h3 style={PlaylistsStyles.playlistTitle}>{playlist.name}</h3>
+            </div>
           )}
         </div>
       ))}
     </div>
   );
 }
-
-export default Playlists;

@@ -2,11 +2,13 @@ import { cloudTheme } from '../colors/cloudTheme';
 
 export const AppStyles = {
   app: {
-    minHeight: '100vh',
+    height: '100vh',
+    width: '100vw',
     backgroundColor: cloudTheme.background,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    overflow: 'hidden',
   },
   logoutButton: {
     backgroundColor: cloudTheme.accent,
