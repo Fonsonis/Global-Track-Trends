@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+// App.js
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import Login from './components/Login';
 import MainScreen from './components/MainScreen';
@@ -11,37 +12,7 @@ export default function App() {
   const [isPremium, setIsPremium] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const hash = window.location.hash
-      .substring(1)
-      .split('&')
-      .reduce((initial, item) => {
-        let parts = item.split('=');
-        initial[parts[0]] = decodeURIComponent(parts[1]);
-        return initial;
-      }, {});
-
-    window.location.hash = '';
-    let _token = hash.access_token;
-
-    if (_token) {
-      setToken(_token);
-      localStorage.setItem('spotify_token', _token);
-    } else {
-      _token = localStorage.getItem('spotify_token');
-      if (_token) {
-        setToken(_token);
-      }
-    }
-
-    if (_token) {
-      fetchUserProfile(_token);
-    } else {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const fetchUserProfile = async (token) => {
+  const fetchUserProfile = useCallback(async (token) => {
     setIsLoading(true);
     try {
       const response = await axios.get('https://api.spotify.com/v1/me', {
@@ -59,15 +30,43 @@ export default function App() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const logout = () => {
+  useEffect(() => {
+    const hash = window.location.hash
+      .substring(1)
+      .split('&')
+      .reduce((initial, item) => {
+        let parts = item.split('=');
+        initial[parts[0]] = decodeURIComponent(parts[1]);
+        return initial;
+      }, {});
+
+    window.location.hash = '';
+    let _token = hash.access_token;
+
+    if (_token) {
+      setToken(_token);
+      localStorage.setItem('spotify_token', _token);
+      fetchUserProfile(_token);
+    } else {
+      _token = localStorage.getItem('spotify_token');
+      if (_token) {
+        setToken(_token);
+        fetchUserProfile(_token);
+      } else {
+        setIsLoading(false);
+      }
+    }
+  }, [fetchUserProfile]);
+
+  const logout = useCallback(() => {
     setToken('');
     setUserProfile(null);
     setIsPremium(false);
     localStorage.removeItem('spotify_token');
     window.location.href = window.location.origin;
-  };
+  }, []);
 
   if (isLoading) {
     return <div style={AppStyles.loadingContainer}>Cargando perfil...</div>;
