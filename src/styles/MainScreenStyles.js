@@ -1,7 +1,6 @@
 export const MainScreenStyles = {
   container: {
     display: 'flex',
-    height: '100vh',
     width: '100vw',
     color: 'white',
     fontFamily: 'Arial, sans-serif',
@@ -21,15 +20,15 @@ export const MainScreenStyles = {
     padding: '20px',
     display: 'flex',
     flexDirection: 'column',
-    overflowY: 'auto',
     position: 'relative',
     zIndex: 1,
+    overflowY: 'auto',
   },
   contentColumn: {
     flex: 1,
     padding: '20px',
-    overflowY: 'auto',
     position: 'relative',
+    overflowY: 'auto',
     zIndex: 1,
   },
   navigationBar: {

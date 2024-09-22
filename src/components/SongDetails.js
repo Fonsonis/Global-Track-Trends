@@ -1,55 +1,55 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import axios from 'axios';
-import { SongDetailsStyles } from '../styles/SongDetailsStyles';
-import { Play, Pause, SkipBack, SkipForward } from 'lucide-react';
+import React, { useEffect, useState, useCallback } from 'react'
+import axios from 'axios'
+import { SongDetailsStyles } from '../styles/SongDetailsStyles'
+import { Play, Pause, SkipBack, SkipForward } from 'lucide-react'
 
 export default function Component({ song, token, player, currentPlaylist, onSongChange }) {
-  const [lyrics, setLyrics] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [loadingDots, setLoadingDots] = useState('');
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [lyrics, setLyrics] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [loadingDots, setLoadingDots] = useState('')
+  const [isPlaying, setIsPlaying] = useState(false)
 
   const fetchLyrics = useCallback(async () => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      const response = await axios.get(`https://api.lyrics.ovh/v1/${encodeURIComponent(song.artists[0].name)}/${encodeURIComponent(song.name)}`);
-      setLyrics(response.data.lyrics || 'Letra no disponible');
+      const response = await axios.get(`https://api.lyrics.ovh/v1/${encodeURIComponent(song.artists[0].name)}/${encodeURIComponent(song.name)}`)
+      setLyrics(response.data.lyrics || 'Letra no disponible')
     } catch (error) {
-      console.error('Error al obtener las letras', error);
-      setLyrics('Letra no disponible');
+      console.error('Error al obtener las letras', error)
+      setLyrics('Letra no disponible')
     }
-    setIsLoading(false);
-  }, [song]);
+    setIsLoading(false)
+  }, [song])
 
   useEffect(() => {
-    setLyrics(''); // Resetear las letras al cambiar de canción
-    fetchLyrics();
-  }, [song, fetchLyrics]);
+    setLyrics('') // Resetear las letras al cambiar de canción
+    fetchLyrics()
+  }, [song, fetchLyrics])
 
   useEffect(() => {
     if (isLoading) {
       const interval = setInterval(() => {
-        setLoadingDots(dots => dots.length < 3 ? dots + '.' : '');
-      }, 500);
-      return () => clearInterval(interval);
+        setLoadingDots(dots => dots.length < 3 ? dots + '.' : '')
+      }, 500)
+      return () => clearInterval(interval)
     }
-  }, [isLoading]);
+  }, [isLoading])
 
   const togglePlayPause = () => {
     if (player) {
       player.togglePlay().then(() => {
-        setIsPlaying(!isPlaying);
-      });
+        setIsPlaying(!isPlaying)
+      })
     }
-  };
+  }
 
   const skipToNext = () => {
-    onSongChange('next');
-  };
+    onSongChange('next')
+  }
 
   const skipToPrevious = () => {
-    onSongChange('previous');
-  };
+    onSongChange('previous')
+  }
 
   return (
     <div style={SongDetailsStyles.container}>
@@ -73,9 +73,9 @@ export default function Component({ song, token, player, currentPlaylist, onSong
           </button>
         </div>
       </div>
-      <div style={SongDetailsStyles.scrollableContent}>
+      <div style={SongDetailsStyles.lyricsSection}>
+        <h3 style={SongDetailsStyles.lyricsTitle}>Letras:</h3>
         <div style={SongDetailsStyles.lyricsContainer}>
-          <h3 style={SongDetailsStyles.lyricsTitle}>Letras:</h3>
           <div style={SongDetailsStyles.lyricsWrapper}>
             {isLoading ? (
               <p style={SongDetailsStyles.loadingText}>Cargando{loadingDots}</p>
@@ -86,5 +86,5 @@ export default function Component({ song, token, player, currentPlaylist, onSong
         </div>
       </div>
     </div>
-  );
+  )
 }

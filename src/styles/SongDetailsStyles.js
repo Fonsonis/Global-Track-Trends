@@ -3,7 +3,8 @@ export const SongDetailsStyles = {
     display: 'flex',
     flexDirection: 'column',
     height: '100%',
-    overflow: 'hidden',
+    overflowx:'hidden',
+    overflowY:'auto'
   },
   fixedContent: {
     padding: '20px',
@@ -48,38 +49,35 @@ export const SongDetailsStyles = {
     padding: '10px',
     margin: '0 10px',
     transition: 'all 0.3s ease',
-    '&:hover': {
-      transform: 'scale(1.1)',
-    },
-    '&:focus': {
-      outline: 'none',
-    },
   },
-  scrollableContent: {
+  lyricsSection: {
     flex: 1,
-    overflowY: 'auto',
+    overflowY: 'none',
     padding: '20px',
-  },
-  lyricsContainer: {
-    marginTop: '20px',
   },
   lyricsTitle: {
     fontSize: '20px',
     fontWeight: 'bold',
     marginBottom: '10px',
   },
+  lyricsContainer: {
+    height: 'calc(100% - 30px)', // Ajusta esto según sea necesario
+    overflowY: 'none',
+  },
   lyricsWrapper: {
+    overflowY:'none',
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
     padding: '15px',
     borderRadius: '8px',
   },
   lyrics: {
+    overflowY:'auto',
     whiteSpace: 'pre-wrap',
     wordBreak: 'break-word',
     fontSize: '16px',
-    lineHeight: '1.6',
+    lineHeight: '1.6',  
   },
   loadingText: {
     fontSize: '16px',
   },
-};
+}
