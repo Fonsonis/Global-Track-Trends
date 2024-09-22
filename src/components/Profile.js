@@ -1,9 +1,9 @@
 import React from 'react';
 import { ProfileStyles } from '../styles/ProfileStyles';
 
-export default function Profile({ userProfile, logout }) {
+export default function Profile({ userProfile, isPremium, logout }) {
   if (!userProfile) {
-    return <div style={ProfileStyles.loading}>Cargando perfil...</div>;
+    return null;
   }
 
   return (
@@ -15,6 +15,7 @@ export default function Profile({ userProfile, logout }) {
       )}
       <h2 style={ProfileStyles.name}>{userProfile.display_name}</h2>
       <p style={ProfileStyles.info}>Seguidores: {userProfile.followers.total}</p>
+      <p style={ProfileStyles.info}>Tipo de cuenta: {isPremium ? 'Premium' : 'Gratuita'}</p>
       <button onClick={logout} style={ProfileStyles.logoutButton}>Cerrar sesión</button>
     </div>
   );

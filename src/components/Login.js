@@ -7,8 +7,18 @@ const REDIRECT_URI = process.env.REACT_APP_REDIRECT_URI || 'http://localhost:300
 const AUTH_ENDPOINT = 'https://accounts.spotify.com/authorize';
 const RESPONSE_TYPE = 'token';
 
+const scopes = [
+  'user-read-private',
+  'user-read-email',
+  'playlist-read-private',
+  'playlist-read-collaborative',
+  'streaming',
+  'user-read-playback-state',
+  'user-modify-playback-state'
+];
+
 export default function Login() {
-  const loginUrl = `${AUTH_ENDPOINT}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=${RESPONSE_TYPE}&show_dialog=true`;
+  const loginUrl = `${AUTH_ENDPOINT}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=${RESPONSE_TYPE}&scope=${scopes.join('%20')}&show_dialog=true`;
 
   return (
     <div style={LoginStyles.container}>

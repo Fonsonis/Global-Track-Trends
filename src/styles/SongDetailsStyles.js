@@ -3,8 +3,8 @@ export const SongDetailsStyles = {
     display: 'flex',
     flexDirection: 'column',
     height: '100%',
-    overflowx:'hidden',
-    overflowY:'auto'
+    overflowX: 'hidden',
+    overflowY: 'auto'
   },
   fixedContent: {
     padding: '20px',
@@ -35,6 +35,26 @@ export const SongDetailsStyles = {
     fontSize: '18px',
     color: '#b3b3b3',
   },
+  progressBarContainer: {
+    width: '100%',
+    height: '4px',
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: '2px',
+    marginBottom: '10px',
+  },
+  progressBar: {
+    height: '100%',
+    backgroundColor: '#1DB954',
+    borderRadius: '2px',
+    transition: 'width 0.1s linear',
+  },
+  timeInfo: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    fontSize: '12px',
+    color: '#b3b3b3',
+    marginBottom: '10px',
+  },
   playerControls: {
     display: 'flex',
     justifyContent: 'center',
@@ -52,7 +72,7 @@ export const SongDetailsStyles = {
   },
   lyricsSection: {
     flex: 1,
-    overflowY: 'none',
+    overflowY: 'auto',
     padding: '20px',
   },
   lyricsTitle: {
@@ -61,17 +81,15 @@ export const SongDetailsStyles = {
     marginBottom: '10px',
   },
   lyricsContainer: {
-    height: 'calc(100% - 30px)', // Ajusta esto según sea necesario
-    overflowY: 'none',
+    height: 'calc(100% - 30px)',
+    overflowY: 'auto',
   },
   lyricsWrapper: {
-    overflowY:'none',
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
     padding: '15px',
     borderRadius: '8px',
   },
   lyrics: {
-    overflowY:'auto',
     whiteSpace: 'pre-wrap',
     wordBreak: 'break-word',
     fontSize: '16px',
@@ -79,5 +97,10 @@ export const SongDetailsStyles = {
   },
   loadingText: {
     fontSize: '16px',
+  },
+  premiumMessage: {
+    textAlign: 'center',
+    color: '#b3b3b3',
+    marginTop: '20px',
   },
 }

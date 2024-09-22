@@ -18,9 +18,14 @@ export default function Component({ token, onSongSelect, onPlaylistSelect, selec
         let response = await fetch(`https://api.spotify.com/v1/search?q=Top 50&type=playlist&limit=50`, {
           headers: { "Authorization": `Bearer ${token}` },
         });
-        if(!response.ok){
-          alert("Error con la API de Spotify")
-          return;
+        if (!response.ok) {
+          if (response.status === 401) {
+            // Token expirado, redirigir al login
+            localStorage.removeItem('spotify_token');
+            window.location.href = '/'; // O donde esté tu componente de login
+          } else {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
         }
         response = await response.json();
 
@@ -76,6 +81,11 @@ export default function Component({ token, onSongSelect, onPlaylistSelect, selec
         setLastWeekTracks(prev => ({ ...prev, [playlistId]: shuffledTracks }));
       } catch (error) {
         console.error('Error al obtener las pistas de la lista de reproducción', error);
+        if (error.response && error.response.status === 401) {
+          // Token expirado, redirigir al login
+          localStorage.removeItem('spotify_token');
+          window.location.href = '/'; // O donde esté tu componente de login
+        }
       }
     }
 
