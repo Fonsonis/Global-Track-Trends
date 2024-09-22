@@ -6,6 +6,7 @@ import PlaylistDetails from './PlaylistDetails';
 import NavigationBar from './NavigationBar';
 import SpotifyPlayer from './SpotifyPlayer';
 import { MainScreenStyles } from '../styles/MainScreenStyles';
+import axios from 'axios';
 
 export default function MainScreen({ token, userProfile, isPremium, logout }) {
   const [selectedSong, setSelectedSong] = useState(null);
@@ -16,6 +17,8 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
   const [deviceId, setDeviceId] = useState(null);
   const [currentPlaylist, setCurrentPlaylist] = useState([]);
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     if (selectedPlaylist && selectedPlaylist.color) {
@@ -26,10 +29,35 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
     }
   }, [selectedPlaylist]);
 
-  const handleSongSelect = (song, playlistId, songList) => {
+  const handleSongSelect = async (song, playlistId, songList) => {
+    if (isPlaying) {
+      try {
+        await axios.put(`https://api.spotify.com/v1/me/player/pause`, {}, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+      } catch (error) {
+        console.error('Error pausing current song:', error);
+      }
+    }
+
     setSelectedSong(song);
     setCurrentPlaylist(songList);
     setCurrentSongIndex(songList.findIndex(item => item.track.id === song.id));
+    setIsPlaying(false);
+    setProgress(0);
+
+    try {
+      await axios.put(`https://api.spotify.com/v1/me/player/play`, {
+        uris: [song.uri],
+        position_ms: 0
+      }, {
+        headers: { 'Authorization': `Bearer ${token}` },
+        params: { device_id: deviceId }
+      });
+      setIsPlaying(true);
+    } catch (error) {
+      console.error('Error playing new song:', error);
+    }
   };
 
   const handlePlaylistSelect = (playlist) => {
@@ -37,6 +65,8 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
     setSelectedSong(null);
     setCurrentPlaylist([]);
     setCurrentSongIndex(0);
+    setIsPlaying(false);
+    setProgress(0);
   };
 
   const handlePlayerReady = useCallback((player, device_id) => {
@@ -44,16 +74,59 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
     setDeviceId(device_id);
   }, []);
 
-  const handleSongChange = (newSong) => {
-    if (player) {
-      player.pause().then(() => {
-        setSelectedSong(newSong);
-        setCurrentSongIndex(currentPlaylist.findIndex(item => item.track.id === newSong.id));
-      });
+  const handleSongChange = (direction) => {
+    if (currentPlaylist.length === 0) return;
+
+    let newIndex;
+    if (direction === 'next') {
+      newIndex = (currentSongIndex + 1) % currentPlaylist.length;
     } else {
-      setSelectedSong(newSong);
-      setCurrentSongIndex(currentPlaylist.findIndex(item => item.track.id === newSong.id));
+      newIndex = (currentSongIndex - 1 + currentPlaylist.length) % currentPlaylist.length;
     }
+
+    const newSong = currentPlaylist[newIndex].track;
+    handleSongSelect(newSong, selectedPlaylist.id, currentPlaylist);
+  };
+
+  const togglePlayPause = async () => {
+    if (isPremium && deviceId) {
+      try {
+        if (isPlaying) {
+          await axios.put(`https://api.spotify.com/v1/me/player/pause`, {}, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+        } else {
+          await axios.put(`https://api.spotify.com/v1/me/player/play`, {
+            uris: [selectedSong.uri],
+            position_ms: progress
+          }, {
+            headers: { 'Authorization': `Bearer ${token}` },
+            params: { device_id: deviceId }
+          });
+        }
+        setIsPlaying(!isPlaying);
+      } catch (error) {
+        console.error('Error toggling play/pause:', error);
+      }
+    }
+  };
+
+  const handleSeek = async (position) => {
+    if (isPremium && deviceId) {
+      try {
+        await axios.put(`https://api.spotify.com/v1/me/player/seek`, null, {
+          headers: { 'Authorization': `Bearer ${token}` },
+          params: { position_ms: position, device_id: deviceId }
+        });
+        setProgress(position);
+      } catch (error) {
+        console.error('Error seeking:', error);
+      }
+    }
+  };
+
+  const updateProgress = (newProgress) => {
+    setProgress(newProgress);
   };
 
   return (
@@ -83,6 +156,11 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
             currentPlaylist={currentPlaylist}
             onSongChange={handleSongChange}
             isPremium={isPremium}
+            isPlaying={isPlaying}
+            togglePlayPause={togglePlayPause}
+            progress={progress}
+            onSeek={handleSeek}
+            updateProgress={updateProgress}
           />
         ) : selectedPlaylist ? (
           <PlaylistDetails playlist={selectedPlaylist} />

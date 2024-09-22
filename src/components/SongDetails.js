@@ -3,13 +3,25 @@ import axios from 'axios'
 import { SongDetailsStyles } from '../styles/SongDetailsStyles'
 import { Play, Pause, SkipBack, SkipForward } from 'lucide-react'
 
-export default function SongDetails({ song, token, player, currentPlaylist, onSongChange, isPremium, deviceId }) {
+export default function SongDetails({ 
+  song, 
+  token, 
+  player, 
+  currentPlaylist, 
+  onSongChange, 
+  isPremium, 
+  deviceId,
+  isPlaying,
+  togglePlayPause,
+  progress,
+  onSeek,
+  updateProgress
+}) {
   const [lyrics, setLyrics] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [loadingDots, setLoadingDots] = useState('')
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [progress, setProgress] = useState(0)
   const progressInterval = useRef(null)
+  const progressBarRef = useRef(null)
 
   const fetchLyrics = useCallback(async () => {
     setIsLoading(true)
@@ -26,8 +38,6 @@ export default function SongDetails({ song, token, player, currentPlaylist, onSo
   useEffect(() => {
     setLyrics('')
     fetchLyrics()
-    setProgress(0)
-    setIsPlaying(false)
   }, [song, fetchLyrics])
 
   useEffect(() => {
@@ -43,8 +53,7 @@ export default function SongDetails({ song, token, player, currentPlaylist, onSo
     if (player) {
       player.addListener('player_state_changed', state => {
         if (state) {
-          setIsPlaying(!state.paused)
-          setProgress(state.position)
+          updateProgress(state.position)
         }
       })
     }
@@ -53,57 +62,25 @@ export default function SongDetails({ song, token, player, currentPlaylist, onSo
         player.removeListener('player_state_changed')
       }
     }
-  }, [player])
+  }, [player, updateProgress])
 
   useEffect(() => {
     if (isPlaying) {
       progressInterval.current = setInterval(() => {
-        setProgress(prev => prev + 1000)
+        updateProgress(prev => prev + 1000)
       }, 1000)
     } else {
       clearInterval(progressInterval.current)
     }
     return () => clearInterval(progressInterval.current)
-  }, [isPlaying])
-
-  const togglePlayPause = async () => {
-    if (isPremium && deviceId) {
-      try {
-        if (isPlaying) {
-          await axios.put(`https://api.spotify.com/v1/me/player/pause`, {}, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          })
-        } else {
-          await axios.put(`https://api.spotify.com/v1/me/player/play`, {
-            uris: [song.uri],
-            position_ms: progress
-          }, {
-            headers: { 'Authorization': `Bearer ${token}` },
-            params: { device_id: deviceId }
-          })
-        }
-        setIsPlaying(!isPlaying)
-        console.log(isPlaying ? 'Paused' : 'Started playing:', song.name)
-      } catch (error) {
-        console.error('Error toggling play/pause:', error)
-      }
-    }
-  }
+  }, [isPlaying, updateProgress])
 
   const skipToNext = () => {
-    if (currentPlaylist && currentPlaylist.length > 0) {
-      const currentIndex = currentPlaylist.findIndex(item => item.track.id === song.id)
-      const nextIndex = (currentIndex + 1) % currentPlaylist.length
-      onSongChange(currentPlaylist[nextIndex].track)
-    }
+    onSongChange('next')
   }
 
   const skipToPrevious = () => {
-    if (currentPlaylist && currentPlaylist.length > 0) {
-      const currentIndex = currentPlaylist.findIndex(item => item.track.id === song.id)
-      const previousIndex = (currentIndex - 1 + currentPlaylist.length) % currentPlaylist.length
-      onSongChange(currentPlaylist[previousIndex].track)
-    }
+    onSongChange('previous')
   }
 
   const formatTime = (ms) => {
@@ -111,6 +88,15 @@ export default function SongDetails({ song, token, player, currentPlaylist, onSo
     const minutes = Math.floor(seconds / 60)
     const remainingSeconds = seconds % 60
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
+  }
+
+  const handleProgressBarClick = (event) => {
+    if (progressBarRef.current && isPremium) {
+      const rect = progressBarRef.current.getBoundingClientRect()
+      const clickPosition = (event.clientX - rect.left) / rect.width
+      const newPosition = Math.floor(clickPosition * song.duration_ms)
+      onSeek(newPosition)
+    }
   }
 
   return (
@@ -125,7 +111,11 @@ export default function SongDetails({ song, token, player, currentPlaylist, onSo
         </div>
         {isPremium ? (
           <>
-            <div style={SongDetailsStyles.progressBarContainer}>
+            <div 
+              style={SongDetailsStyles.progressBarContainer} 
+              onClick={handleProgressBarClick}
+              ref={progressBarRef}
+            >
               <div 
                 style={{
                   ...SongDetailsStyles.progressBar,
@@ -155,14 +145,12 @@ export default function SongDetails({ song, token, player, currentPlaylist, onSo
       </div>
       <div style={SongDetailsStyles.lyricsSection}>
         <h3 style={SongDetailsStyles.lyricsTitle}>Letras:</h3>
-        <div style={SongDetailsStyles.lyricsContainer}>
-          <div style={SongDetailsStyles.lyricsWrapper}>
-            {isLoading ? (
-              <p style={SongDetailsStyles.loadingText}>Cargando{loadingDots}</p>
-            ) : (
-              <pre style={SongDetailsStyles.lyrics}>{lyrics}</pre>
-            )}
-          </div>
+        <div style={SongDetailsStyles.lyricsWrapper}>
+          {isLoading ? (
+            <p style={SongDetailsStyles.loadingText}>Cargando{loadingDots}</p>
+          ) : (
+            <pre style={SongDetailsStyles.lyrics}>{lyrics}</pre>
+          )}
         </div>
       </div>
     </div>
