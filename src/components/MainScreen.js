@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Profile from './Profile';
-import Playlists from './Playlists';
+import Playlists from './Top50Playlists';
+import UserPlaylists from './UserPlaylists';
 import SongDetails from './SongDetails';
 import PlaylistDetails from './PlaylistDetails';
 import NavigationBar from './NavigationBar';
@@ -146,7 +147,20 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
 
   const handleViewChange = useCallback((view) => {
     setCurrentView(view);
-  }, []);
+    setSelectedPlaylist(null);
+    setShowSongDetails(false);
+    if (view === 'analytics') {
+      setSelectedSong(null);
+      if (isPlaying) {
+        axios.put(`https://api.spotify.com/v1/me/player/pause`, {}, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }).catch(error => console.error('Error pausing song:', error));
+      }
+      setIsPlaying(false);
+      setProgress(0);
+      alert('La sección de Analíticas está en construcción.');
+    }
+  }, [token, isPlaying]);
 
   return (
     <div style={MainScreenStyles.container}>
@@ -168,6 +182,14 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
               selectedPlaylistId={selectedPlaylist?.id}
             />
           )}
+          {currentView === 'userPlaylists' && (
+            <UserPlaylists 
+              token={token} 
+              onSongSelect={handleSongSelect} 
+              onPlaylistSelect={handlePlaylistSelect}
+              selectedPlaylistId={selectedPlaylist?.id}
+            />
+          )}
           {currentView === 'analytics' && (
             <div style={MainScreenStyles.analyticsPlaceholder}>
               <h2>Analíticas</h2>
@@ -181,7 +203,7 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
         ...MainScreenStyles.scrollbarStyles,
         backgroundColor: backgroundColor,
       }}>
-        {showSongDetails && selectedSong ? (
+        {showSongDetails && selectedSong && currentView !== 'analytics' ? (
           <SongDetails 
             song={selectedSong} 
             token={token} 
@@ -196,10 +218,10 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
             onSeek={handleSeek}
             updateProgress={updateProgress}
           />
-        ) : selectedPlaylist ? (
+        ) : selectedPlaylist && currentView !== 'analytics' ? (
           <PlaylistDetails playlist={selectedPlaylist} />
         ) : null}
-        {selectedSong && !showSongDetails && (
+        {selectedSong && !showSongDetails && currentView !== 'analytics' && (
           <MiniPlayer 
             song={selectedSong}
             isPlaying={isPlaying}
