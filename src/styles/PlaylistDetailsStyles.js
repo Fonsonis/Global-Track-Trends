@@ -1,8 +1,10 @@
 export const PlaylistDetailsStyles = {
   container: {
     padding: '20px',
-    height: '100%',
     overflowY: 'auto',
+    display: 'flex',  
+    flexDirection: 'column',
+    alignItems: 'center',
   },
   title: {
     fontSize: '24px',

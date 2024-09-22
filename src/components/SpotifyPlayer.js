@@ -1,8 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 
 export default function SpotifyPlayer({ token, onPlayerReady }) {
-  const [player, setPlayer] = useState(null);
-
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://sdk.scdn.co/spotify-player.js";
@@ -16,8 +14,6 @@ export default function SpotifyPlayer({ token, onPlayerReady }) {
         getOAuthToken: cb => { cb(token); },
         volume: 0.5
       });
-
-      setPlayer(player);
 
       player.addListener('ready', ({ device_id }) => {
         console.log('Ready with Device ID', device_id);

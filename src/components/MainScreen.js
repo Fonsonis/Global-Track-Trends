@@ -5,6 +5,7 @@ import SongDetails from './SongDetails';
 import PlaylistDetails from './PlaylistDetails';
 import NavigationBar from './NavigationBar';
 import SpotifyPlayer from './SpotifyPlayer';
+import MiniPlayer from './MiniPlayer';
 import { MainScreenStyles } from '../styles/MainScreenStyles';
 import axios from 'axios';
 
@@ -12,24 +13,22 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
   const [selectedSong, setSelectedSong] = useState(null);
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
   const [backgroundColor, setBackgroundColor] = useState('#121212');
-  const [prevBackgroundColor, setPrevBackgroundColor] = useState('#121212');
   const [player, setPlayer] = useState(null);
   const [deviceId, setDeviceId] = useState(null);
   const [currentPlaylist, setCurrentPlaylist] = useState([]);
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [showSongDetails, setShowSongDetails] = useState(false);
+  const [currentView, setCurrentView] = useState('playlists');
 
   useEffect(() => {
     if (selectedPlaylist && selectedPlaylist.color) {
-      setPrevBackgroundColor(backgroundColor);
       setBackgroundColor(selectedPlaylist.color);
-    } else {
-      setPrevBackgroundColor(backgroundColor);
     }
   }, [selectedPlaylist]);
 
-  const handleSongSelect = async (song, playlistId, songList) => {
+  const handleSongSelect = useCallback(async (song, playlistId, songList) => {
     if (isPlaying) {
       try {
         await axios.put(`https://api.spotify.com/v1/me/player/pause`, {}, {
@@ -45,6 +44,7 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
     setCurrentSongIndex(songList.findIndex(item => item.track.id === song.id));
     setIsPlaying(false);
     setProgress(0);
+    setShowSongDetails(true);
 
     try {
       await axios.put(`https://api.spotify.com/v1/me/player/play`, {
@@ -58,23 +58,14 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
     } catch (error) {
       console.error('Error playing new song:', error);
     }
-  };
+  }, [isPlaying, token, deviceId]);
 
-  const handlePlaylistSelect = (playlist) => {
+  const handlePlaylistSelect = useCallback((playlist) => {
     setSelectedPlaylist(playlist);
-    setSelectedSong(null);
-    setCurrentPlaylist([]);
-    setCurrentSongIndex(0);
-    setIsPlaying(false);
-    setProgress(0);
-  };
-
-  const handlePlayerReady = useCallback((player, device_id) => {
-    setPlayer(player);
-    setDeviceId(device_id);
+    setShowSongDetails(false);
   }, []);
 
-  const handleSongChange = (direction) => {
+  const handleSongChange = useCallback((direction) => {
     if (currentPlaylist.length === 0) return;
 
     let newIndex;
@@ -85,10 +76,10 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
     }
 
     const newSong = currentPlaylist[newIndex].track;
-    handleSongSelect(newSong, selectedPlaylist.id, currentPlaylist);
-  };
+    handleSongSelect(newSong, selectedPlaylist?.id, currentPlaylist);
+  }, [currentPlaylist, currentSongIndex, handleSongSelect, selectedPlaylist]);
 
-  const togglePlayPause = async () => {
+  const togglePlayPause = useCallback(async () => {
     if (isPremium && deviceId) {
       try {
         if (isPlaying) {
@@ -109,9 +100,9 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
         console.error('Error toggling play/pause:', error);
       }
     }
-  };
+  }, [isPremium, deviceId, isPlaying, token, selectedSong, progress]);
 
-  const handleSeek = async (position) => {
+  const handleSeek = useCallback(async (position) => {
     if (isPremium && deviceId) {
       try {
         await axios.put(`https://api.spotify.com/v1/me/player/seek`, null, {
@@ -123,31 +114,74 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
         console.error('Error seeking:', error);
       }
     }
-  };
+  }, [isPremium, deviceId, token]);
 
-  const updateProgress = (newProgress) => {
+  const updateProgress = useCallback((newProgress) => {
     setProgress(newProgress);
-  };
+  }, []);
+
+  const handleMiniPlayerClick = useCallback(() => {
+    setShowSongDetails(true);
+  }, []);
+
+  const handleCloseMiniPlayer = useCallback(async () => {
+    if (isPlaying) {
+      try {
+        await axios.put(`https://api.spotify.com/v1/me/player/pause`, {}, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+      } catch (error) {
+        console.error('Error pausing song:', error);
+      }
+    }
+    setSelectedSong(null);
+    setIsPlaying(false);
+    setProgress(0);
+  }, [isPlaying, token]);
+
+  const handlePlayerReady = useCallback((player, device_id) => {
+    setPlayer(player);
+    setDeviceId(device_id);
+  }, []);
+
+  const handleViewChange = useCallback((view) => {
+    setCurrentView(view);
+  }, []);
 
   return (
     <div style={MainScreenStyles.container}>
-      <div 
-        style={{
-          ...MainScreenStyles.backgroundTransition,
-          backgroundColor: prevBackgroundColor,
-          opacity: 0,
-        }}
-      />
-      <div 
-        style={{
-          ...MainScreenStyles.backgroundTransition,
-          backgroundColor: backgroundColor,
-          opacity: 1,
-        }}
-      />
-      <div style={MainScreenStyles.detailsColumn}>
+      <div style={MainScreenStyles.leftColumn}>
         <Profile userProfile={userProfile} isPremium={isPremium} logout={logout} />
-        {selectedSong ? (
+        <NavigationBar currentView={currentView} onViewChange={handleViewChange} />
+      </div>
+      <div style={{
+        ...MainScreenStyles.mainContent,
+        ...MainScreenStyles.scrollbarStyles,
+        backgroundColor: backgroundColor,
+      }}>
+        <div style={MainScreenStyles.contentColumn}>
+          {currentView === 'playlists' && (
+            <Playlists 
+              token={token} 
+              onSongSelect={handleSongSelect} 
+              onPlaylistSelect={handlePlaylistSelect}
+              selectedPlaylistId={selectedPlaylist?.id}
+            />
+          )}
+          {currentView === 'analytics' && (
+            <div style={MainScreenStyles.analyticsPlaceholder}>
+              <h2>Analíticas</h2>
+              <p>Esta sección está en construcción.</p>
+            </div>
+          )}
+        </div>
+      </div>
+      <div style={{
+        ...MainScreenStyles.rightColumn,
+        ...MainScreenStyles.scrollbarStyles,
+        backgroundColor: backgroundColor,
+      }}>
+        {showSongDetails && selectedSong ? (
           <SongDetails 
             song={selectedSong} 
             token={token} 
@@ -165,16 +199,16 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
         ) : selectedPlaylist ? (
           <PlaylistDetails playlist={selectedPlaylist} />
         ) : null}
+        {selectedSong && !showSongDetails && (
+          <MiniPlayer 
+            song={selectedSong}
+            isPlaying={isPlaying}
+            togglePlayPause={togglePlayPause}
+            onClick={handleMiniPlayerClick}
+            onClose={handleCloseMiniPlayer}
+          />
+        )}
       </div>
-      <div style={MainScreenStyles.contentColumn}>
-        <Playlists 
-          token={token} 
-          onSongSelect={handleSongSelect} 
-          onPlaylistSelect={handlePlaylistSelect}
-          selectedPlaylistId={selectedPlaylist?.id}
-        />
-      </div>
-      <NavigationBar />
       {isPremium && <SpotifyPlayer token={token} onPlayerReady={handlePlayerReady} />}
     </div>
   );

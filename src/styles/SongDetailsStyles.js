@@ -25,6 +25,7 @@ export const SongDetailsStyles = {
     objectFit: 'cover',
     borderRadius: '4px',
     marginRight: '20px',
+    marginLeft: '15px'
   },
   textInfo: {
     flex: 1,
