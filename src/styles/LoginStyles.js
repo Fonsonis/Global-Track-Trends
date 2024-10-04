@@ -41,6 +41,7 @@ export const LoginStyles = {
     textDecoration: 'none',
     transition: 'background-color 0.3s, transform 0.3s',
     fontWeight: 'bold',
+    textAlign: 'center'
   },
   projectExplanation: {
     backgroundColor: 'rgba(255, 255, 255, 0.1)', // Semi-transparent white
