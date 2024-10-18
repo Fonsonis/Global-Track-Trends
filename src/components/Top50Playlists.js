@@ -90,7 +90,7 @@ export default function Playlists({ token, onSongSelect, onPlaylistSelect, selec
     onPlaylistSelect({...playlist, color: playlistColors[playlistId]});
   };
 
-  // Cerrar playlist
+  // Expandir/reducir playlist
   const toggleTrackExpansion = useCallback((playlistId, e) => {
     e.stopPropagation();
     setExpandedTracks(prev => ({ ...prev, [playlistId]: !prev[playlistId] }));
