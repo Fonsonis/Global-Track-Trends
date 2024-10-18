@@ -24,7 +24,10 @@ export default function Login() {
     <div style={{...LoginStyles.container, padding: '20px', maxWidth: '100%'}}>
       <h1 style={{...LoginStyles.title, fontSize: 'clamp(24px, 5vw, 36px)'}}>GlobalTrackTrends</h1>
       <div style={LoginStyles.projectExplanation}>
-        <ProjectExplanation />
+        <div>
+          <h2 style={ProjectExplanationStyles.title}>Sobre GlobalTrackTrends</h2>
+          <p style={ProjectExplanationStyles.paragraph}>GlobalTrackTrends es una aplicación que te permite explorar las tendencias musicales globales utilizando datos de Spotify.</p>
+        </div>
       </div>
       <p style={{...LoginStyles.description, maxWidth: '600px', margin: '20px auto'}}>
         Explora las tendencias musicales globales con nuestra aplicación interactiva.
