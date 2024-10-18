@@ -1,6 +1,6 @@
 import React from 'react';
 import { LoginStyles } from '../styles/LoginStyles';
-import ProjectExplanation from './ProjectExplanation';
+import { ProjectExplanationStyles } from '../styles/ProjectExplanationStyles';
 
 const CLIENT_ID = process.env.REACT_APP_SPOTIFY_CLIENT_ID;
 const REDIRECT_URI = process.env.REACT_APP_REDIRECT_URI || 'http://localhost:3000';

@@ -1,5 +1,4 @@
 import React from 'react';
-import { ProjectExplanationStyles } from '../styles/ProjectExplanationStyles';
 
 export default function ProjectExplanation() {
   return (
