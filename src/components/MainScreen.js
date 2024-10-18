@@ -11,6 +11,7 @@ import { MainScreenStyles } from '../styles/MainScreenStyles';
 import axios from 'axios';
 
 export default function MainScreen({ token, userProfile, isPremium, logout }) {
+  // Estados para diferentes casos de la aplicación
   const [selectedSong, setSelectedSong] = useState(null);
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
   const [backgroundColor, setBackgroundColor] = useState('#121212');
@@ -23,13 +24,16 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
   const [showSongDetails, setShowSongDetails] = useState(false);
   const [currentView, setCurrentView] = useState('playlists');
 
+  // Cambiar color de fondo
   useEffect(() => {
     if (selectedPlaylist && selectedPlaylist.color) {
       setBackgroundColor(selectedPlaylist.color);
     }
   }, [selectedPlaylist]);
 
+  // Selección canción
   const handleSongSelect = useCallback(async (song, playlistId, songList) => {
+    // Pausar la canción actual si está sonando
     if (isPlaying) {
       try {
         await axios.put(`https://api.spotify.com/v1/me/player/pause`, {}, {
@@ -40,6 +44,7 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
       }
     }
 
+    // Actualizar estados
     setSelectedSong(song);
     setCurrentPlaylist(songList);
     setCurrentSongIndex(songList.findIndex(item => item.track.id === song.id));
@@ -47,6 +52,7 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
     setProgress(0);
     setShowSongDetails(true);
 
+    // Reproducir nueva canción
     try {
       await axios.put(`https://api.spotify.com/v1/me/player/play`, {
         uris: [song.uri],
@@ -61,11 +67,13 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
     }
   }, [isPlaying, token, deviceId]);
 
+  // Selección playlist
   const handlePlaylistSelect = useCallback((playlist) => {
     setSelectedPlaylist(playlist);
     setShowSongDetails(false);
   }, []);
 
+  // Avanzar/retroceder canción
   const handleSongChange = useCallback((direction) => {
     if (currentPlaylist.length === 0) return;
 
@@ -80,6 +88,7 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
     handleSongSelect(newSong, selectedPlaylist?.id, currentPlaylist);
   }, [currentPlaylist, currentSongIndex, handleSongSelect, selectedPlaylist]);
 
+  // Pausar/reproducir canción
   const togglePlayPause = useCallback(async () => {
     if (isPremium && deviceId) {
       try {
@@ -103,6 +112,7 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
     }
   }, [isPremium, deviceId, isPlaying, token, selectedSong, progress]);
 
+  // Buscar canción
   const handleSeek = useCallback(async (position) => {
     if (isPremium && deviceId) {
       try {
@@ -117,14 +127,17 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
     }
   }, [isPremium, deviceId, token]);
 
+  // Actualizar barra progreso canción
   const updateProgress = useCallback((newProgress) => {
     setProgress(newProgress);
   }, []);
 
+  // Pausar/reproducir minireproductor
   const handleMiniPlayerClick = useCallback(() => {
     setShowSongDetails(true);
   }, []);
 
+  // Cerrar minireproductor
   const handleCloseMiniPlayer = useCallback(async () => {
     if (isPlaying) {
       try {
@@ -140,11 +153,13 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
     setProgress(0);
   }, [isPlaying, token]);
 
+  // Activar reproductor
   const handlePlayerReady = useCallback((player, device_id) => {
     setPlayer(player);
     setDeviceId(device_id);
   }, []);
 
+  // Cambio de vistas
   const handleViewChange = useCallback((view) => {
     setCurrentView(view);
     setSelectedPlaylist(null);

@@ -13,27 +13,23 @@ export default function Playlists({ token, onSongSelect, onPlaylistSelect, selec
   const [playlistColors, setPlaylistColors] = useState({});
   const [hoveredPlaylistId, setHoveredPlaylistId] = useState(null);
 
+  // Obtener playlist
   useEffect(() => {
     const fetchPlaylists = async () => {
       try {
         let response = await fetch(`https://api.spotify.com/v1/search?q=Top 50&type=playlist&limit=50`, {
           headers: { "Authorization": `Bearer ${token}` },
         });
-        if (!response.ok) {
-          if (response.status === 401) {
-            localStorage.removeItem('spotify_token');
-            window.location.href = '/';
-          } else {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-        }
+
         response = await response.json();
 
+        // Playlists paises
         const allPlaylists = response.playlists.items;
         const filteredPlaylists = allPlaylists.filter(playlist => 
           playlist.name.includes('Top 50 -') && playlist.owner.id === 'spotify'
         );
 
+        // Playlist global
         const sortedPlaylists = filteredPlaylists.sort((a, b) => {
           if (a.name.includes('Global')) return -1;
           if (b.name.includes('Global')) return 1;
@@ -94,11 +90,13 @@ export default function Playlists({ token, onSongSelect, onPlaylistSelect, selec
     onPlaylistSelect({...playlist, color: playlistColors[playlistId]});
   };
 
+  // Cerrar playlist
   const toggleTrackExpansion = useCallback((playlistId, e) => {
     e.stopPropagation();
     setExpandedTracks(prev => ({ ...prev, [playlistId]: !prev[playlistId] }));
   }, []);
 
+  // Seleccionar canción
   const handleSongClick = useCallback((song, playlistId, e) => {
     e.stopPropagation();
     onSongSelect(song, playlistId, playlistTracks[playlistId]);

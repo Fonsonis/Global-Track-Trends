@@ -10,6 +10,7 @@ export default function UserPlaylists({ token, onSongSelect, onPlaylistSelect, s
   const [expandedTracks, setExpandedTracks] = useState({});
   const [hoveredPlaylistId, setHoveredPlaylistId] = useState(null);
 
+  // Obtener playlists
   useEffect(() => {
     const fetchUserPlaylists = async () => {
       try {
@@ -26,6 +27,7 @@ export default function UserPlaylists({ token, onSongSelect, onPlaylistSelect, s
     fetchUserPlaylists();
   }, [token]);
 
+  // Cambio playlist
   const togglePlaylist = async (playlist) => {
     const playlistId = playlist.id;
 

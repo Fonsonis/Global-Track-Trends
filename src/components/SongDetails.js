@@ -3,26 +3,14 @@ import axios from 'axios'
 import { SongDetailsStyles } from '../styles/SongDetailsStyles'
 import { Play, Pause, SkipBack, SkipForward } from 'lucide-react'
 
-export default function SongDetails({ 
-  song, 
-  token, 
-  player, 
-  currentPlaylist, 
-  onSongChange, 
-  isPremium, 
-  deviceId,
-  isPlaying,
-  togglePlayPause,
-  progress,
-  onSeek,
-  updateProgress
-}) {
+export default function SongDetails({ song, token, player, currentPlaylist, onSongChange, isPremium, deviceId, isPlaying, togglePlayPause, progress, onSeek, updateProgress}) {
   const [lyrics, setLyrics] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [loadingDots, setLoadingDots] = useState('')
   const progressInterval = useRef(null)
   const progressBarRef = useRef(null)
 
+  // Obtener lyrics canción
   const fetchLyrics = useCallback(async () => {
     setIsLoading(true)
     try {
@@ -35,11 +23,13 @@ export default function SongDetails({
     setIsLoading(false)
   }, [song])
 
+  // Setear lyrics vacio
   useEffect(() => {
     setLyrics('')
     fetchLyrics()
   }, [song, fetchLyrics])
 
+  // Efecto de carga
   useEffect(() => {
     if (isLoading) {
       const interval = setInterval(() => {
@@ -49,6 +39,7 @@ export default function SongDetails({
     }
   }, [isLoading])
 
+  // Añadir reproductor
   useEffect(() => {
     if (player) {
       player.addListener('player_state_changed', state => {
@@ -64,6 +55,7 @@ export default function SongDetails({
     }
   }, [player, updateProgress])
 
+  // Efecto barra tiempo
   useEffect(() => {
     if (isPlaying) {
       progressInterval.current = setInterval(() => {
@@ -75,6 +67,7 @@ export default function SongDetails({
     return () => clearInterval(progressInterval.current)
   }, [isPlaying, updateProgress])
 
+  // Avanzar/retroceder cancion
   const skipToNext = () => {
     onSongChange('next')
   }
@@ -83,6 +76,7 @@ export default function SongDetails({
     onSongChange('previous')
   }
 
+  // Formatear tiempo detalles canción
   const formatTime = (ms) => {
     const seconds = Math.floor(ms / 1000)
     const minutes = Math.floor(seconds / 60)
@@ -90,6 +84,7 @@ export default function SongDetails({
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
   }
 
+  // Barra de progreso
   const handleProgressBarClick = (event) => {
     if (progressBarRef.current && isPremium) {
       const rect = progressBarRef.current.getBoundingClientRect()

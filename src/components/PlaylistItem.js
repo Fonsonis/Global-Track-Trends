@@ -17,6 +17,8 @@ export default function PlaylistItem({
   showPositionChange = false,
   showTrophies = false
 }) {
+  
+  // Calculo de posiciones top 3
   const getPositionChange = (track, index) => {
     if (!showPositionChange) return 'transparent';
     const lastWeekIndex = lastWeekTracks?.findIndex(t => t.track.id === track.id);
@@ -26,6 +28,7 @@ export default function PlaylistItem({
     return 'gray';
   };
 
+  // Obtener medalla en cada caso
   const getMedalColor = (position) => {
     if (!showTrophies) return null;
     switch(position) {
