@@ -1,4 +1,4 @@
-# Spotify Top 50 Spain - React App
+# Spotify Top 50 - React App
 
 This project is a React application that displays the current Top 50 tracks in Spain from Spotify.
 
@@ -8,9 +8,9 @@ Before you begin, ensure you have met the following requirements:
 * You have installed the latest version of [Node.js and npm](https://nodejs.org/)
 * You have read [Spotify's API documentation](https://developer.spotify.com/documentation/web-api/).
 
-## Installing Spotify Top 50 Spain
+## Installing Spotify Top 50
 
-To install Spotify Top 50 Spain, follow these steps:
+To install Spotify Top 50 , follow these steps:
 
 1. Clone the repository:
    ```
@@ -27,7 +27,7 @@ To install Spotify Top 50 Spain, follow these steps:
 
 ## Running Spotify Top 50 Spain
 
-To run Spotify Top 50 Spain, follow these steps:
+To run Spotify Top 50, follow these steps:
 
 ```
 npm start
