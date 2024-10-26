@@ -9,6 +9,7 @@
     "axios": "^1.7.7",
     "color-thief-browser": "^2.0.2",
     "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "fast-average-color": "^9.4.0",

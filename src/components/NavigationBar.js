@@ -25,6 +25,15 @@ export default function NavigationBar({ currentView, onViewChange }) {
       <button 
         style={{
           ...NavigationBarStyles.button,
+          backgroundColor: currentView === 'recentlyPlayed' ? 'rgba(255, 255, 255, 0.1)' : 'transparent'
+        }}
+        onClick={() => onViewChange('recentlyPlayed')}
+      >
+        Escuchado recientemente
+      </button>
+      <button 
+        style={{
+          ...NavigationBarStyles.button,
           backgroundColor: currentView === 'analytics' ? 'rgba(255, 255, 255, 0.1)' : 'transparent'
         }}
         onClick={() => onViewChange('analytics')}
