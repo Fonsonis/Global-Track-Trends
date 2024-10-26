@@ -30,7 +30,7 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
     }
   }, [selectedPlaylist]);
 
-  const handleSongSelect = useCallback(async (song, playlistId, songList) => {
+  const handleSongSelect = useCallback(async (song, playlistId, songList, isFromHistory = false) => {
     if (isPlaying) {
       try {
         await axios.put(`https://api.spotify.com/v1/me/player/pause`, {}, {
@@ -58,13 +58,17 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
       });
       setIsPlaying(true);
 
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/song-history`, {
-        userId: userProfile.id,
-        songId: song.id,
-        songName: song.name,
-        artistName: song.artists[0].name
-      });
-      console.log('Historial de canciones registrado:', response.data);
+      // Solo registramos el historial si la canción no viene del historial
+      if (!isFromHistory) {
+        const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/song-history`, {
+          userId: userProfile.id,
+          songId: song.id,
+          songName: song.name,
+          artistName: song.artists[0].name,
+          isFromHistory: false
+        });
+        console.log('Historial de canciones registrado:', response.data);
+      }
     } catch (error) {
       console.error('Error al reproducir la nueva canción o registrar el historial:', error);
     }

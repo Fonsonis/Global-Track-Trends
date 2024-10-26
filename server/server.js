@@ -24,6 +24,7 @@ const userSchema = new mongoose.Schema({
   isPremium: Boolean,
   lastAccessAttempt: Date,
   recentlyPlayedSongs: [{
+    _id: mongoose.Schema.Types.ObjectId,
     songId: String,
     songName: String,
     artistName: String,
@@ -82,7 +83,13 @@ app.get('/api/users/:spotifyId', async (req, res) => {
 });
 
 app.post('/api/song-history', async (req, res) => {
-  const { userId, songId, songName, artistName } = req.body;
+  const { userId, songId, songName, artistName, isFromHistory } = req.body;
+  
+  // Si la canción se reproduce desde el historial, no la añadimos de nuevo
+  if (isFromHistory) {
+    return res.status(200).json({ message: 'Song played from history, not added to DB' });
+  }
+
   try {
     const songHistory = new SongHistory({
       userId,
@@ -95,6 +102,7 @@ app.post('/api/song-history', async (req, res) => {
     const user = await User.findOne({ spotifyId: userId });
     if (user) {
       user.recentlyPlayedSongs.unshift({
+        _id: songHistory._id,
         songId,
         songName,
         artistName,
@@ -123,6 +131,30 @@ app.get('/api/song-history/:userId', async (req, res) => {
       res.status(404).json({ message: 'User not found' });
     }
   } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.delete('/api/song-history/:userId/:id', async (req, res) => {
+  const { userId, id } = req.params;
+  try {
+    // Remove the song from the user's recentlyPlayedSongs array
+    const user = await User.findOneAndUpdate(
+      { spotifyId: userId },
+      { $pull: { recentlyPlayedSongs: { _id: id } } },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Remove the song from the SongHistory collection
+    await SongHistory.deleteOne({ _id: id });
+
+    res.json({ message: 'Song removed from history successfully', updatedUser: user });
+  } catch (error) {
+    console.error('Error removing song from history:', error);
     res.status(500).json({ message: error.message });
   }
 });
