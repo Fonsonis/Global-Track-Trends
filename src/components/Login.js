@@ -3,11 +3,10 @@ import { LoginStyles } from '../styles/LoginStyles';
 import { ProjectExplanationStyles } from '../styles/ProjectExplanationStyles';
 
 const CLIENT_ID = process.env.REACT_APP_SPOTIFY_CLIENT_ID;
-const REDIRECT_URI = process.env.REACT_APP_REDIRECT_URI || 'http://localhost:3000';
+const REDIRECT_URI = process.env.REACT_APP_REDIRECT_URI || 'http://localhost:3000/callback';
 const AUTH_ENDPOINT = 'https://accounts.spotify.com/authorize';
 const RESPONSE_TYPE = 'token';
 
-// Permisos necesarios para la aplicación
 const scopes = [
   'user-read-private',
   'user-read-email',
@@ -19,7 +18,6 @@ const scopes = [
 ];
 
 export default function Login() {
-  // Construcción de la URL de autenticación de Spotify
   const loginUrl = `${AUTH_ENDPOINT}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=${RESPONSE_TYPE}&scope=${scopes.join('%20')}&show_dialog=true`;
 
   return (

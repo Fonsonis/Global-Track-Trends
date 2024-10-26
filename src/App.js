@@ -1,10 +1,11 @@
-// App.js
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import Login from './components/Login';
 import MainScreen from './components/MainScreen';
 import { AppStyles } from './styles/AppStyles';
 import { GlobalStyles } from './styles/GlobalStyles';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 export default function App() {
   const [token, setToken] = useState('');
@@ -20,10 +21,18 @@ export default function App() {
       });
       setUserProfile(response.data);
       setIsPremium(response.data.product === 'premium');
+
+      // Save user data to our MongoDB
+      await axios.post(`${API_URL}/api/users`, {
+        spotifyId: response.data.id,
+        name: response.data.display_name,
+        email: response.data.email,
+        isPremium: response.data.product === 'premium'
+      });
+
     } catch (error) {
       console.error('Error fetching user profile:', error);
       if (error.response && error.response.status === 401) {
-        // Token expirado, eliminar y redirigir al login
         localStorage.removeItem('spotify_token');
         setToken('');
       }
