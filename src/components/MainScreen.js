@@ -37,13 +37,13 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
           headers: { 'Authorization': `Bearer ${token}` }
         });
       } catch (error) {
-        console.error('Error pausing current song:', error);
+        console.error('Error al pausar la canción actual:', error);
       }
     }
 
     setSelectedSong(song);
-    setCurrentPlaylist(songList);
-    setCurrentSongIndex(songList.findIndex(item => item.track.id === song.id));
+    setCurrentPlaylist(songList || [{ track: song }]);
+    setCurrentSongIndex(songList ? songList.findIndex(item => item.track.id === song.id) : 0);
     setIsPlaying(false);
     setProgress(0);
     setShowSongDetails(true);
@@ -64,9 +64,9 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
         songName: song.name,
         artistName: song.artists[0].name
       });
-      console.log('Song history recorded:', response.data);
+      console.log('Historial de canciones registrado:', response.data);
     } catch (error) {
-      console.error('Error playing new song or recording song history:', error);
+      console.error('Error al reproducir la nueva canción o registrar el historial:', error);
     }
   }, [isPlaying, token, deviceId, userProfile.id]);
 
@@ -107,7 +107,7 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
         }
         setIsPlaying(!isPlaying);
       } catch (error) {
-        console.error('Error toggling play/pause:', error);
+        console.error('Error al alternar reproducción/pausa:', error);
       }
     }
   }, [isPremium, deviceId, isPlaying, token, selectedSong, progress]);
@@ -121,7 +121,7 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
         });
         setProgress(position);
       } catch (error) {
-        console.error('Error seeking:', error);
+        console.error('Error al buscar:', error);
       }
     }
   }, [isPremium, deviceId, token]);
@@ -141,7 +141,7 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
           headers: { 'Authorization': `Bearer ${token}` }
         });
       } catch (error) {
-        console.error('Error pausing song:', error);
+        console.error('Error al pausar la canción:', error);
       }
     }
     setSelectedSong(null);
@@ -163,7 +163,7 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
       if (isPlaying) {
         axios.put(`https://api.spotify.com/v1/me/player/pause`, {}, {
           headers: { 'Authorization': `Bearer ${token}` }
-        }).catch(error => console.error('Error pausing song:', error));
+        }).catch(error => console.error('Error al pausar la canción:', error));
       }
       setIsPlaying(false);
       setProgress(0);
@@ -203,6 +203,7 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
             <RecentlyPlayed 
               token={token}
               userProfile={userProfile}
+              onSongSelect={handleSongSelect}
             />
           )}
           {currentView === 'analytics' && (
@@ -242,7 +243,6 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
             isPlaying={isPlaying}
             togglePlayPause={togglePlayPause}
             onClick={handleMiniPlayerClick}
-            
             onClose={handleCloseMiniPlayer}
           />
         )}

@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { RecentlyPlayedStyles } from '../styles/RecentlyPlayedStyles';
 
-export default function RecentlyPlayed({ token, userProfile }) {
+export default function RecentlyPlayed({ token, userProfile, onSongSelect }) {
   const [recentlyPlayed, setRecentlyPlayed] = useState([]);
 
   useEffect(() => {
@@ -13,19 +13,34 @@ export default function RecentlyPlayed({ token, userProfile }) {
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/song-history/${userProfile.id}`);
         setRecentlyPlayed(response.data);
       } catch (error) {
-        console.error('Error fetching recently played songs:', error);
+        console.error('Error al obtener las canciones reproducidas recientemente:', error);
       }
     };
 
     fetchRecentlyPlayed();
   }, [userProfile.id]);
 
+  const handleSongClick = async (song) => {
+    try {
+      const response = await axios.get(`https://api.spotify.com/v1/tracks/${song.songId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      onSongSelect(response.data, null, [{ track: response.data }]);
+    } catch (error) {
+      console.error('Error al obtener los detalles de la canción:', error);
+    }
+  };
+
   return (
     <div style={RecentlyPlayedStyles.container}>
       <h2 style={RecentlyPlayedStyles.title}>Escuchado recientemente</h2>
       <ul style={RecentlyPlayedStyles.songList}>
         {recentlyPlayed.map((song, index) => (
-          <li key={`${song.songId}-${index}`} style={RecentlyPlayedStyles.songItem}>
+          <li 
+            key={`${song.songId}-${index}`} 
+            style={{...RecentlyPlayedStyles.songItem, cursor: 'pointer'}}
+            onClick={() => handleSongClick(song)}
+          >
             <div style={RecentlyPlayedStyles.songInfo}>
               <div style={RecentlyPlayedStyles.songName}>{song.songName}</div>
               <div style={RecentlyPlayedStyles.artistName}>{song.artistName}</div>
