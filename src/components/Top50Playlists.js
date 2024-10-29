@@ -1,8 +1,11 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { PlaylistsStyles } from '../styles/PlaylistsStyles';
 import { getAverageColor } from '../utils/colorUtils';
 import PlaylistItem from './PlaylistItem';
+
+// Define the base URL for API calls
+const API_BASE_URL = 'http://localhost:5001'; // Update this to match your server's address and port
 
 export default function Playlists({ token, onSongSelect, onPlaylistSelect, selectedPlaylistId }) {
   const [playlists, setPlaylists] = useState([]);
@@ -13,62 +16,74 @@ export default function Playlists({ token, onSongSelect, onPlaylistSelect, selec
   const [hoveredPlaylistId, setHoveredPlaylistId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const fetchedRef = useRef(false);
 
-  // Obtener playlist
   useEffect(() => {
     const fetchPlaylists = async () => {
-      if (fetchedRef.current) return;
-      fetchedRef.current = true;
-
       try {
         setIsLoading(true);
         setError(null);
-        let allPlaylists = [];
-        let nextUrl = 'https://api.spotify.com/v1/users/spotify/playlists?limit=50';
 
-        while (nextUrl) {
-          const response = await fetch(nextUrl, {
-            headers: { "Authorization": `Bearer ${token}` },
+        // Use the correct API URL
+        const cachedResponse = await axios.get(`${API_BASE_URL}/api/cached-playlists`);
+        
+        if (cachedResponse.data && cachedResponse.data.playlists) {
+          console.log("Usando playlists en caché");
+          setPlaylists(cachedResponse.data.playlists);
+          setPlaylistColors(cachedResponse.data.playlistColors || {});
+        } else {
+          console.log("Obteniendo nuevas playlists de Spotify");
+          let allPlaylists = [];
+          let nextUrl = 'https://api.spotify.com/v1/users/spotify/playlists?limit=50';
+
+          while (nextUrl) {
+            const response = await fetch(nextUrl, {
+              headers: { "Authorization": `Bearer ${token}` },
+            });
+
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            allPlaylists = [...allPlaylists, ...data.items];
+            nextUrl = data.next;
+
+            console.log(`Obtenidas ${allPlaylists.length} playlists hasta ahora.`);
+          }
+
+          console.log("Total de playlists obtenidas:", allPlaylists.length);
+
+          const filteredPlaylists = allPlaylists.filter(playlist => 
+            (playlist.name.toLowerCase().includes('top 50') || playlist.name.includes('50:')) &&
+            playlist.owner.id === 'spotify'
+          );
+
+          console.log("Playlists Top 50 filtradas:", filteredPlaylists.length);
+
+          const sortedPlaylists = filteredPlaylists.sort((a, b) => {
+            if (a.name.toLowerCase().includes('global')) return -1;
+            if (b.name.toLowerCase().includes('global')) return 1;
+            return a.name.localeCompare(b.name);
           });
 
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+          console.log("Playlists ordenadas:", sortedPlaylists.length);
+
+          setPlaylists(sortedPlaylists);
+          
+          const colors = {};
+          for (const playlist of sortedPlaylists) {
+            if (playlist.images[0]) {
+              const color = await getAverageColor(playlist.images[0].url);
+              colors[playlist.id] = color;
+            }
           }
+          setPlaylistColors(colors);
 
-          const data = await response.json();
-          allPlaylists = [...allPlaylists, ...data.items];
-          nextUrl = data.next;
-
-          console.log(`Obtenidas ${allPlaylists.length} playlists hasta ahora.`);
-        }
-
-        console.log("Total de playlists obtenidas:", allPlaylists.length);
-
-        // Playlists paises
-        const filteredPlaylists = allPlaylists.filter(playlist => 
-          (playlist.name.toLowerCase().includes('top 50') || playlist.name.includes('50:')) &&
-          playlist.owner.id === 'spotify'
-        );
-
-        console.log("Playlists Top 50 filtradas:", filteredPlaylists.length);
-
-        // Playlist global
-        const sortedPlaylists = filteredPlaylists.sort((a, b) => {
-          if (a.name.toLowerCase().includes('global')) return -1;
-          if (b.name.toLowerCase().includes('global')) return 1;
-          return a.name.localeCompare(b.name);
-        });
-
-        console.log("Playlists ordenadas:", sortedPlaylists.length);
-
-        setPlaylists(sortedPlaylists);
-        
-        for (const playlist of sortedPlaylists) {
-          if (playlist.images[0]) {
-            const color = await getAverageColor(playlist.images[0].url);
-            setPlaylistColors(prev => ({ ...prev, [playlist.id]: color }));
-          }
+          // Cache the playlists
+          await axios.post(`${API_BASE_URL}/api/cache-playlists`, { 
+            playlists: sortedPlaylists,
+            playlistColors: colors
+          });
         }
 
         setIsLoading(false);
@@ -76,7 +91,6 @@ export default function Playlists({ token, onSongSelect, onPlaylistSelect, selec
         console.error('Error al obtener las listas de reproducción', error);
         setError('Error al cargar las playlists. Por favor, intenta de nuevo más tarde.');
         setIsLoading(false);
-        fetchedRef.current = false;
       }
     };
 
@@ -120,13 +134,11 @@ export default function Playlists({ token, onSongSelect, onPlaylistSelect, selec
     onPlaylistSelect({...playlist, color: playlistColors[playlistId]});
   };
 
-  // Expandir/reducir playlist
   const toggleTrackExpansion = useCallback((playlistId, e) => {
     e.stopPropagation();
     setExpandedTracks(prev => ({ ...prev, [playlistId]: !prev[playlistId] }));
   }, []);
 
-  // Seleccionar canción
   const handleSongClick = useCallback((song, playlistId, e) => {
     e.stopPropagation();
     onSongSelect(song, playlistId, playlistTracks[playlistId]);
