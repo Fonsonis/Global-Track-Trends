@@ -63,22 +63,26 @@ export default function UserPlaylists({ token, onSongSelect, onPlaylistSelect, s
 
   return (
     <div style={PlaylistsStyles.container}>
-      {playlists.map((playlist) => (
-        <PlaylistItem
-          key={playlist.id}
-          playlist={playlist}
-          isSelected={selectedPlaylistId === playlist.id}
-          isHovered={hoveredPlaylistId === playlist.id}
-          backgroundColor="rgba(255, 255, 255, 0.1)"
-          tracks={playlistTracks[playlist.id]}
-          expandedTracks={expandedTracks[playlist.id]}
-          onTogglePlaylist={togglePlaylist}
-          onToggleTrackExpansion={toggleTrackExpansion}
-          onSongClick={handleSongClick}
-          showPositionChange={false}
-          showTrophies={false}
-        />
-      ))}
+      {playlists.filter(playlist => playlist != null).length > 0 ? (
+        playlists.filter(playlist => playlist != null).map((playlist) => (
+          <PlaylistItem
+            key={playlist.id}
+            playlist={playlist}
+            isSelected={selectedPlaylistId === playlist.id}
+            isHovered={hoveredPlaylistId === playlist.id}
+            backgroundColor="rgba(255, 255, 255, 0.1)"
+            tracks={playlistTracks[playlist.id]}
+            expandedTracks={expandedTracks[playlist.id]}
+            onTogglePlaylist={togglePlaylist}
+            onToggleTrackExpansion={toggleTrackExpansion}
+            onSongClick={handleSongClick}
+            showPositionChange={false}
+            showTrophies={false}
+          />
+        ))
+      ) : (
+        <p>No playlists available.</p>
+      )}
     </div>
   );
 }

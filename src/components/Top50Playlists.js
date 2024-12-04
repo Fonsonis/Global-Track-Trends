@@ -17,29 +17,40 @@ export default function Playlists({ token, onSongSelect, onPlaylistSelect, selec
   useEffect(() => {
     const fetchPlaylists = async () => {
       try {
-        let response = await fetch(`https://api.spotify.com/v1/search?q=Top 50&type=playlist&limit=50`, {
+        const response = await fetch(`https://api.spotify.com/v1/search?q=Top 50&type=playlist&limit=50`, {
           headers: { "Authorization": `Bearer ${token}` },
         });
-
-        response = await response.json();
-
-        // Playlists paises
-        const allPlaylists = response.playlists.items;
-        const filteredPlaylists = allPlaylists.filter(playlist => 
-          playlist.name.includes('Top 50 -') && playlist.owner.id === 'spotify'
+    
+        const data = await response.json();
+    
+        // Ensure we have playlists data
+        if (!data?.playlists?.items) {
+          console.error('No playlist items found in response');
+          return;
+        }
+    
+        // Filter for valid Top 50 playlists
+        const filteredPlaylists = data.playlists.items.filter(playlist => 
+          playlist && 
+          playlist.name && 
+          typeof playlist.name === 'string' &&
+          (playlist.name.includes('Top 50'))
         );
-
-        // Playlist global
+    
+        // Sort playlists (Global first, then alphabetically)
         const sortedPlaylists = filteredPlaylists.sort((a, b) => {
-          if (a.name.includes('Global')) return -1;
-          if (b.name.includes('Global')) return 1;
+          if (a.name.toLowerCase().includes('global')) return -1;
+          if (b.name.toLowerCase().includes('global')) return 1;
           return a.name.localeCompare(b.name);
         });
-
+    
+        console.log('Filtered and sorted playlists:', sortedPlaylists);
+    
         setPlaylists(sortedPlaylists);
         
+        // Process colors for valid playlists
         sortedPlaylists.forEach(playlist => {
-          if (playlist.images[0]) {
+          if (playlist?.images?.[0]?.url) {
             getAverageColor(playlist.images[0].url).then(color => {
               setPlaylistColors(prev => ({ ...prev, [playlist.id]: color }));
             });
