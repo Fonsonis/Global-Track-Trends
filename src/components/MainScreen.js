@@ -30,6 +30,7 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
     }
   }, [selectedPlaylist]);
 
+  //Selección de canción
   const handleSongSelect = useCallback(async (song, playlistId, songList, isFromHistory = false) => {
     if (isPlaying) {
       try {
@@ -58,7 +59,7 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
       });
       setIsPlaying(true);
 
-      // Solo registramos el historial si la canción no viene del historial
+      // Solo se registra en el historial si la canción no viene de él
       if (!isFromHistory) {
         const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/song-history`, {
           userId: userProfile.id,
@@ -74,11 +75,13 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
     }
   }, [isPlaying, token, deviceId, userProfile.id]);
 
+  //Selección playllist
   const handlePlaylistSelect = useCallback((playlist) => {
     setSelectedPlaylist(playlist);
     setShowSongDetails(false);
   }, []);
 
+  //Avanzar/retroceder canción
   const handleSongChange = useCallback((direction) => {
     if (currentPlaylist.length === 0) return;
 
@@ -93,6 +96,7 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
     handleSongSelect(newSong, selectedPlaylist?.id, currentPlaylist);
   }, [currentPlaylist, currentSongIndex, handleSongSelect, selectedPlaylist]);
 
+  //Interacción botón play/pause
   const togglePlayPause = useCallback(async () => {
     if (isPremium && deviceId) {
       try {
@@ -116,6 +120,7 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
     }
   }, [isPremium, deviceId, isPlaying, token, selectedSong, progress]);
 
+  //Control barra de progreso canciones
   const handleSeek = useCallback(async (position) => {
     if (isPremium && deviceId) {
       try {
@@ -134,10 +139,12 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
     setProgress(newProgress);
   }, []);
 
+  //Extender miniplayer
   const handleMiniPlayerClick = useCallback(() => {
     setShowSongDetails(true);
   }, []);
 
+  //Cerrar miniplayer
   const handleCloseMiniPlayer = useCallback(async () => {
     if (isPlaying) {
       try {
