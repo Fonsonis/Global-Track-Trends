@@ -19,6 +19,7 @@ export default function RecentlyPlayed({ token, userProfile, onSongSelect }) {
 
   useEffect(() => {
     fetchRecentlyPlayed();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userProfile.id]);
 
   const handleSongClick = async (song) => {
