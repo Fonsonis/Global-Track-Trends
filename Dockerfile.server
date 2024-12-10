@@ -1,0 +1,22 @@
+# Imagen base de Node.js
+FROM node:20
+
+# Establece el directorio de trabajo dentro del contenedor
+WORKDIR /app
+
+# Copia los archivos de configuración de la app
+COPY package*.json ./
+
+# Instala las dependencias
+RUN npm install
+
+# Copia el resto de los archivos del proyecto
+COPY . .
+
+RUN rm -rf /app/src
+
+# Expón el puerto donde escucha tu servidor
+EXPOSE 5001
+
+# Comando para iniciar el servidor
+CMD ["node", "./server/server.js"]
