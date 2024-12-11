@@ -10,6 +10,7 @@ const port = process.env.PORT || 5001;
 app.use(cors());
 app.use(express.json());
 
+try{
 mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 const connection = mongoose.connection;
 connection.once('open', () => {
@@ -204,6 +205,12 @@ app.post('/api/cache-playlists', async (req, res) => {
     res.status(500).json({ message: 'Error al almacenar playlists en caché' });
   }
 });
+
+}catch(e){
+  console.error(e);
+}
+
+
 
 app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);
