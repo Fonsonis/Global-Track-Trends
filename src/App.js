@@ -3,7 +3,7 @@ import axios from 'axios';
 import Login from './components/Login';
 import MainScreen from './components/MainScreen';
 import { AppStyles } from './styles/AppStyles';
-import { GlobalStyles } from './styles/GlobalStyles';
+import { GlobalStyles } from './styles/GlobalStyles'; 
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
@@ -22,7 +22,6 @@ export default function App() {
       setUserProfile(response.data);
       setIsPremium(response.data.product === 'premium');
 
-      // Save user data to our MongoDB
       await axios.post(`${API_URL}/api/users`, {
         spotifyId: response.data.id,
         name: response.data.display_name,
@@ -83,7 +82,7 @@ export default function App() {
 
   return (
     <>
-      <style>{GlobalStyles}</style>
+      <GlobalStyles /> {}
       <div className="App" style={AppStyles.app}>
         {!token ? (
           <Login />

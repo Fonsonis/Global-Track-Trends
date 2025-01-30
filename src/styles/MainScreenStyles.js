@@ -20,36 +20,15 @@ export const MainScreenStyles = {
     position: 'relative',
     overflowY: 'auto',
     transition: 'background-color 0.3s ease',
-    scrollbarWidth: 'none',  // Para Firefox
-    msOverflowStyle: 'none',  // Para Internet Explorer y Edge
-    '&::-webkit-scrollbar': {
-      display: 'none',  // Para Chrome, Safari y Opera
-    },
-    '&:hover': {
-      scrollbarWidth: 'thin',
-      msOverflowStyle: 'auto',
-      '&::-webkit-scrollbar': {
-        display: 'block',
-      },
-    },
+    padding: '20px',
+    className: 'scroll-container'
   },
   rightColumn: {
     width: '350px',
     padding: '20px',
     overflowY: 'auto',
     transition: 'background-color 0.3s ease',
-    scrollbarWidth: 'none',  // Para Firefox
-    msOverflowStyle: 'none',  // Para Internet Explorer y Edge
-    '&::-webkit-scrollbar': {
-      display: 'none',  // Para Chrome, Safari y Opera
-    },
-    '&:hover': {
-      scrollbarWidth: 'thin',
-      msOverflowStyle: 'auto',
-      '&::-webkit-scrollbar': {
-        display: 'block',
-      },
-    },
+    className: 'scroll-container'
   },
   contentColumn: {
     padding: '20px',
@@ -64,20 +43,5 @@ export const MainScreenStyles = {
     height: '100%',
     color: 'white',
     fontSize: '18px',
-  },
-  scrollbarStyles: {
-    '&::-webkit-scrollbar': {
-      width: '8px',
-    },
-    '&::-webkit-scrollbar-track': {
-      background: 'transparent',
-    },
-    '&::-webkit-scrollbar-thumb': {
-      backgroundColor: 'rgba(255, 255, 255, 0.3)',
-      borderRadius: '4px',
-    },
-    '&::-webkit-scrollbar-thumb:hover': {
-      backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    },
-  },
+  }
 };

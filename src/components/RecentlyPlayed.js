@@ -8,6 +8,7 @@ import { Trash2 } from 'lucide-react';
 export default function RecentlyPlayed({ token, userProfile, onSongSelect }) {
   const [recentlyPlayed, setRecentlyPlayed] = useState([]);
 
+  // Obtener històrico de canciones
   const fetchRecentlyPlayed = async () => {
     try {
       const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/song-history/${userProfile.id}`);
@@ -19,28 +20,28 @@ export default function RecentlyPlayed({ token, userProfile, onSongSelect }) {
 
   useEffect(() => {
     fetchRecentlyPlayed();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userProfile.id]);
 
+  // Controlar click de canción del registro
   const handleSongClick = async (song) => {
     try {
       const response = await axios.get(`https://api.spotify.com/v1/tracks/${song.songId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
-      // Actualizamos el estado local para reflejar la reproducción inmediatamente
+      // Actualizar estado BD
       setRecentlyPlayed(prevSongs => {
         const updatedSongs = prevSongs.filter(s => s._id !== song._id);
         return [{ ...song, playedAt: new Date() }, ...updatedSongs];
       });
 
-      // Llamamos a onSongSelect con isFromHistory = true
       onSongSelect(response.data, null, [{ track: response.data }], true);
     } catch (error) {
       console.error('Error al obtener los detalles de la canción:', error);
     }
   };
 
+  // Eliminar canción del registro
   const handleDeleteSong = async (id) => {
     try {
       await axios.delete(`${process.env.REACT_APP_API_URL}/api/song-history/${userProfile.id}/${id}`);

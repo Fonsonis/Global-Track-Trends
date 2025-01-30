@@ -30,6 +30,30 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
     }
   }, [selectedPlaylist]);
 
+  //Verifico devices activos
+  useEffect(() => {
+    const fetchDevices = async () => {
+      try {
+        const response = await axios.get('https://api.spotify.com/v1/me/player/devices', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const devices = response.data.devices;
+  
+        if (devices.length > 0) {
+          console.log('Dispositivos encontrados:', devices);
+          setDeviceId(devices[0].id);
+        } else {
+          console.warn('No se encontraron dispositivos disponibles.');
+        }
+      } catch (error) {
+        console.error('Error al obtener dispositivos disponibles:', error);
+      }
+    };
+  
+    fetchDevices();
+  }, [token]);
+  
+
   //Selección de canción
   const handleSongSelect = useCallback(async (song, playlistId, songList, isFromHistory = false) => {
     if (isPlaying) {
@@ -59,7 +83,7 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
       });
       setIsPlaying(true);
 
-      // Solo se registra en el historial si la canción no viene de él
+      // Se registra en el historial si la canción no viene de él
       if (!isFromHistory) {
         const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/song-history`, {
           userId: userProfile.id,
@@ -98,6 +122,29 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
 
   //Interacción botón play/pause
   const togglePlayPause = useCallback(async () => {
+    if (!deviceId) {
+      console.warn('No hay un dispositivo disponible. Intentando reconectar...');
+      try {
+        const devicesResponse = await axios.get('https://api.spotify.com/v1/me/player/devices', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+  
+        const devices = devicesResponse.data.devices;
+        if (devices.length > 0) {
+          const activeDevice = devices[0];
+          setDeviceId(activeDevice.id);
+          console.log('Dispositivo reconectado:', activeDevice);
+        } else {
+          console.error('No se encontraron dispositivos disponibles.');
+          alert('No hay dispositivos disponibles. Abre un cliente de Spotify para continuar.');
+          return;
+        }
+      } catch (error) {
+        console.error('Error al reconectar el dispositivo:', error);
+        return;
+      }
+    }
+  
     if (isPremium && deviceId) {
       try {
         if (isPlaying) {
@@ -119,6 +166,7 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
       }
     }
   }, [isPremium, deviceId, isPlaying, token, selectedSong, progress]);
+  
 
   //Control barra de progreso canciones
   const handleSeek = useCallback(async (position) => {
@@ -161,6 +209,7 @@ export default function MainScreen({ token, userProfile, isPremium, logout }) {
   }, [isPlaying, token]);
 
   const handlePlayerReady = useCallback((player, device_id) => {
+    console.log('Reproductor listo con Device ID:', device_id);
     setPlayer(player);
     setDeviceId(device_id);
   }, []);
